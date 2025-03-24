@@ -4,11 +4,16 @@ import Foundation
 @testable import ShoperWebAPI
 
 @Test func testFetchAccessToken() async throws {
-    // Write your test here and use APIs like `#expect(...)` to check expected conditions.
     let config = Config(shopURL: Environment.shopURL, login: Environment.username, password: Environment.password)
     let client = Client(config: config)
-    try await client.fetchAccessToken()
-    let accessToken = try #require(client.accessToken)
+    let accessToken = try await client.getAccessToken()
     print(accessToken)
+}
+
+@Test func testFetchProducts() async throws {
+    let config = Config(shopURL: Environment.shopURL, login: Environment.username, password: Environment.password, verbose: true)
+    let client = Client(config: config)
+    let products = try await Product.list(client: client).list
+    print(products)
 }
 

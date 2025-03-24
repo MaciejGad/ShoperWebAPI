@@ -1,27 +1,17 @@
 import Foundation
 
-enum Identifier {
-    case id(Int)
-    case none
-}
-
-protocol Model: Codable {
+protocol Resource: Decodable {
     var id: Identifier { get }
     static var endpoint: Endpoint { get }
     
-    func with(id: Identifier) -> Self
-}
-
-protocol Resource {
-    associatedtype M: Model
-    static func list(client: ClientProtocol) async throws -> [M]
-    static func create(client: ClientProtocol, model: M) async throws -> M
-    static func read(client: ClientProtocol, id: Int) async throws -> Model?
+    static func list(client: ClientProtocol) async throws -> ResourceList<Self>
+//    static func create(client: ClientProtocol, model: M) async throws -> M
+//    static func read(client: ClientProtocol, id: Int) async throws -> Model?
 }
 
 extension Resource {
-    static func list(client: ClientProtocol) async throws -> [M] {
-        let data = try await client.get(endpoint: M.endpoint)
+    static func list(client: ClientProtocol) async throws -> ResourceList<Self> {
+        let data = try await client.get(endpoint: Self.endpoint, id: nil)
         return try client.decode(data: data)
     }
 }

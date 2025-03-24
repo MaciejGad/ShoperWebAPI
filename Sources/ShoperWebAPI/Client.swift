@@ -1,10 +1,10 @@
 import Foundation
 
 protocol ClientProtocol {
-    func get(endpoint: Endpoint) async throws -> Data
+    func get(endpoint: Endpoint, id: Int?) async throws -> Data
     func post(endpoint: Endpoint, payload: any Encodable) async throws -> Data
-    func put(endpoint: Endpoint, payload: any Encodable) async throws -> Data
-    func delete(endpoint: Endpoint) async throws -> Data
+    func put(endpoint: Endpoint, id: Int, payload: any Encodable) async throws -> Data
+    func delete(endpoint: Endpoint, id: Int) async throws -> Data
     func decode<Model: Decodable>(data: Data) throws -> Model
 }
 
@@ -59,28 +59,28 @@ public final class Client {
 @available(macOS 12.0, *)
 extension Client: ClientProtocol {
     
-    func get(endpoint: Endpoint) async throws -> Data {
-        try await request(endpoint, method: .get)
+    func get(endpoint: Endpoint, id: Int?) async throws -> Data {
+        try await request(endpoint, id: id, method: .get)
     }
     
     func post(endpoint: Endpoint, payload: any Encodable) async throws -> Data {
-        try await request(endpoint, method: .post, payload: payload)
+        try await request(endpoint, id: nil, method: .post, payload: payload)
     }
     
-    func put(endpoint: Endpoint, payload: any Encodable) async throws -> Data {
-        try await request(endpoint, method: .put, payload: payload)
+    func put(endpoint: Endpoint, id: Int, payload: any Encodable) async throws -> Data {
+        try await request(endpoint, id: id, method: .put, payload: payload)
     }
     
-    func delete(endpoint: Endpoint) async throws -> Data {
-        try await request(endpoint, method: .delete)
+    func delete(endpoint: Endpoint, id: Int) async throws -> Data {
+        try await request(endpoint, id: id, method: .delete)
     }
     
     func decode<Model: Decodable>(data: Data) throws -> Model {
         try decoder.decode(Model.self, from: data)
     }
     
-    private func request(_ endpoint: Endpoint, method: Method, payload: (any Encodable)? = nil) async throws -> Data {
-        let url = endpoint.url(config: config)
+    private func request(_ endpoint: Endpoint, id: Int?, method: Method, payload: (any Encodable)? = nil) async throws -> Data {
+        let url = endpoint.url(config: config, id: id)
         var request = URLRequest(url: url)
         request.httpMethod = method.rawValue
         if let payload = payload {
@@ -90,16 +90,13 @@ extension Client: ClientProtocol {
         let accessToken = try await getAccessToken()
         request.setValue("Bearer \(accessToken.accessToken)", forHTTPHeaderField: "Authorization")
         let (data, response) = try await session.data(for: request)
-        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode > 199, httpResponse.statusCode < 300 else {
             throw ShoperError.invalidResponse(data, response)
+        }
+        if config.verbose {
+            print(String(data: data, encoding: .utf8) ?? "")
         }
         return data
     }
 
-}
-enum Method: String {
-    case get = "GET"
-    case post = "POST"
-    case put = "PUT"
-    case delete = "DELETE"
 }
