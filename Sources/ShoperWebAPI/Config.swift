@@ -1,0 +1,13 @@
+import Foundation
+
+public struct Config {
+    public let shopURL: URL
+    public let login: String
+    public let password: String
+    
+    public init(shopURL: URL, login: String, password: String) {
+        self.shopURL = shopURL
+        self.login = login
+        self.password = password
+    }
+}
