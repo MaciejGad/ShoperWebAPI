@@ -1,7 +1,7 @@
 import Foundation
 
 protocol ClientProtocol {
-    func get(endpoint: Endpoint, id: Int?) async throws -> Data
+    func get(endpoint: Endpoint, id: Int?, filters: Filters?) async throws -> Data
     func post(endpoint: Endpoint, payload: any Encodable) async throws -> Data
     func put(endpoint: Endpoint, id: Int, payload: any Encodable) async throws -> Data
     func delete(endpoint: Endpoint, id: Int) async throws -> Data
@@ -14,6 +14,7 @@ public final class Client {
     public let session: URLSession
     private let decoder: JSONDecoder
     private let encoder: JSONEncoder
+    private var filterEncoder: JSONEncoder
     private var accessToken: Auth?
     
     public init(config: Config, session: URLSession = .shared) {
@@ -23,14 +24,17 @@ public final class Client {
         decoder.keyDecodingStrategy = .convertFromSnakeCase
         self.encoder = JSONEncoder()
         encoder.keyEncodingStrategy = .convertToSnakeCase
-//        encoder.dateEncodingStrategy = .iso8601
         encoder.outputFormatting = .prettyPrinted
         encoder.outputFormatting = .sortedKeys
+        filterEncoder = JSONEncoder()
     }
     
     private func fetchAccessToken() async throws {
         guard accessToken == nil else { return }
-        let url = Endpoint.auth.url(config: config)
+        let url = try Endpoint.auth.url(config: config)
+        if config.verbose {
+            print("Url: \(url)")
+        }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         guard let basicAuth = "\(config.login):\(config.password)".data(using: .utf8)?.base64EncodedString() else {
@@ -59,8 +63,8 @@ public final class Client {
 @available(macOS 12.0, *)
 extension Client: ClientProtocol {
     
-    func get(endpoint: Endpoint, id: Int?) async throws -> Data {
-        try await request(endpoint, id: id, method: .get)
+    func get(endpoint: Endpoint, id: Int?, filters: Filters?) async throws -> Data {
+        try await request(endpoint, id: id, method: .get, filters: filters)
     }
     
     func post(endpoint: Endpoint, payload: any Encodable) async throws -> Data {
@@ -79,11 +83,21 @@ extension Client: ClientProtocol {
         try decoder.decode(Model.self, from: data)
     }
     
-    private func request(_ endpoint: Endpoint, id: Int?, method: Method, payload: (any Encodable)? = nil) async throws -> Data {
-        let url = endpoint.url(config: config, id: id)
+    private func request(_ endpoint: Endpoint, id: Int?, method: Method, payload: (any Encodable)? = nil, filters: Filters? = nil) async throws -> Data {
+        let filtersString: String?
+        if let filters {
+            let filtersData = try filterEncoder.encode(filters)
+            filtersString = String(decoding: filtersData, as: UTF8.self)
+        } else {
+            filtersString = nil
+        }
+        let url = try endpoint.url(config: config, id: id, filters: filtersString)
+        if config.verbose {
+            print("Url: \(url)")
+        }
         var request = URLRequest(url: url)
         request.httpMethod = method.rawValue
-        if let payload = payload {
+        if let payload {
             request.httpBody = try encoder.encode(payload)
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         }

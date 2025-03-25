@@ -1,24 +1,24 @@
 import Foundation
 
-struct Translation: Codable {
-    let translationId: Int
-    let productId: Int
-    let name: String
-    let shortDescription: String
-    let description: String
-    let active: Bool
-    let isdefault: Bool
-    let langId: Int
-    let seoTitle: String
-    let seoDescription: String
-    let seoKeywords: String
-    let seoUrl: String?
-    let permalink: String
-    let order: Int
-    let mainPage: Bool
-    let mainPageOrder: Int
+public struct Translation: Codable {
+    public let translationId: Int
+    public let productId: Int
+    public let name: String
+    public let shortDescription: String
+    public let description: String
+    public let active: Bool
+    public let isdefault: Bool
+    public let langId: Int
+    public let seoTitle: String
+    public let seoDescription: String
+    public let seoKeywords: String
+    public let seoUrl: String?
+    public let permalink: String
+    public let order: Int
+    public let mainPage: Bool
+    public let mainPageOrder: Int
     
-    init(from decoder: any Decoder) throws {
+    public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.translationId = try container.decodeInt(forKey: .translationId)
         self.productId = try container.decodeInt(forKey: .productId)

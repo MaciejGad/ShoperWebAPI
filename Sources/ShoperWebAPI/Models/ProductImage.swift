@@ -1,14 +1,14 @@
 import Foundation
 
-struct ProductImage: Codable {
-    let gfxId: Int
-    let order: Int
-    let name: String
-    let unicName: String
-    let hidden: Bool
-    let `extension`: String
+public struct ProductImage: Codable {
+    public let gfxId: Int
+    public let order: Int
+    public let name: String
+    public let unicName: String
+    public let hidden: Bool
+    public let `extension`: String
     
-    init(from decoder: any Decoder) throws {
+    public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.gfxId = try container.decodeInt(forKey: .gfxId)
         self.order = try container.decodeInt(forKey: .order)

@@ -1,17 +1,17 @@
 import Foundation
 
-struct SpecialOffer: Codable {
-    let promoId: Int
-    let dateFrom: String
-    let dateTo: String
-    let discount: Decimal
-    let discountWholesale: Decimal
-    let discountSpecial: Decimal
-    let discountType: Int
-    let conditionType: Int
-    let stocks: [Int]
+public struct SpecialOffer: Codable {
+    public let promoId: Int
+    public let dateFrom: String
+    public let dateTo: String
+    public let discount: Decimal
+    public let discountWholesale: Decimal
+    public let discountSpecial: Decimal
+    public let discountType: Int
+    public let conditionType: Int
+    public let stocks: [Int]
     
-    init(from decoder: any Decoder) throws {
+    public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.promoId = try container.decodeInt(forKey: .promoId)
         self.dateFrom = try container.decode(String.self, forKey: .dateFrom)

@@ -1,12 +1,12 @@
 import Foundation
 
-struct SafetyInformation: Codable {
-    let gpsrProducerId: Int?
-    let gpsrImporterId: Int?
-    let gpsrResponsibleId: Int?
-    let gpsrCertificates: [Int]
+public struct SafetyInformation: Codable {
+    public let gpsrProducerId: Int?
+    public let gpsrImporterId: Int?
+    public let gpsrResponsibleId: Int?
+    public let gpsrCertificates: [Int]
 
-    init(from decoder: any Decoder) throws {
+    public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.gpsrProducerId = try container.decodeIntIfPresent(forKey: .gpsrProducerId)
         self.gpsrImporterId = try container.decodeIntIfPresent(forKey: .gpsrImporterId)

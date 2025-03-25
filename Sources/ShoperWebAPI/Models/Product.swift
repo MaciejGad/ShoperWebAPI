@@ -1,54 +1,54 @@
 import Foundation
 
-struct Product: Codable {
-    let productId: Int?
-    let type: Int
-    let producerId: Int?
-    let groupId: Int?
-    let taxId: Int
-    let categoryId: Int
-    let unitId: Int
-    let addDate: String
-    let editDate: String
-    let otherPrice: Decimal
-    let promoPrice: Decimal?
-    let code: String
-    let dimensionW: Decimal
-    let dimensionH: Decimal
-    let dimensionL: Decimal
-    let ean: String
-    let pkwiu: String
-    let isProductOfDay: Bool
-    let loyaltyScore: Int?
-    let loyaltyPrice: Int?
-    let inLoyalty: Bool
-    let bestseller: Bool
-    let newproduct: Bool
-    let volWeight: Decimal
-    let gaugeId: Int?
-    let currencyId: Int?
-    let additionalBloz12: Int?
-    let additionalBloz7: Int?
-    let additionalCode39: Int?
-    let additionalGtu: String?
-    let additionalIsbn: String?
-    let additionalKgo: String?
-    let additionalProducer: String?
-    let additionalWarehouse: String?
-    let related: [Int]
-    let options: [Int]
-    let mainImage: ProductImage?
-    let stock: Stock
-    let translations: [String: Translation]
-    let attributes: [String: [String: String]]
-    let categories: [Int]
-    let specialOffer: SpecialOffer?
-    let unitPriceCalculation: Bool
-    let children: ProductChild?
-    let feedsExludes: [Int]?
-    let safetyInformation: SafetyInformation
+public struct Product: Codable {
+    public let productId: Int?
+    public let type: Int
+    public let producerId: Int?
+    public let groupId: Int?
+    public let taxId: Int
+    public let categoryId: Int
+    public let unitId: Int
+    public let addDate: String
+    public let editDate: String
+    public let otherPrice: Decimal
+    public let promoPrice: Decimal?
+    public let code: String
+    public let dimensionW: Decimal
+    public let dimensionH: Decimal
+    public let dimensionL: Decimal
+    public let ean: String
+    public let pkwiu: String
+    public let isProductOfDay: Bool
+    public let loyaltyScore: Int?
+    public let loyaltyPrice: Int?
+    public let inLoyalty: Bool
+    public let bestseller: Bool
+    public let newproduct: Bool
+    public let volWeight: Decimal
+    public let gaugeId: Int?
+    public let currencyId: Int?
+    public let additionalBloz12: Int?
+    public let additionalBloz7: Int?
+    public let additionalCode39: Int?
+    public let additionalGtu: String?
+    public let additionalIsbn: String?
+    public let additionalKgo: String?
+    public let additionalProducer: String?
+    public let additionalWarehouse: String?
+    public let related: [Int]
+    public let options: [Int]
+    public let mainImage: ProductImage?
+    public let stock: Stock
+    public let translations: [String: Translation]
+    public let attributes: [String: [String: String]]
+    public let categories: [Int]
+    public let specialOffer: SpecialOffer?
+    public let unitPriceCalculation: Bool
+    public let children: ProductChild?
+    public let feedsExludes: [Int]?
+    public let safetyInformation: SafetyInformation
     
-    init(from decoder: any Decoder) throws {
+    public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.productId = try container.decodeInt(forKey: .productId)
         self.type = try container.decodeInt(forKey: .type)
@@ -100,11 +100,28 @@ struct Product: Codable {
 }
 
 extension Product: Resource {
+    public typealias Key = ProductFilterKey
+    
     var id: Identifier {
         return productId.map { Identifier.id($0) } ?? .none
     }
     
     static var endpoint: Endpoint {
         .products
-    }    
+    }
+}
+
+extension Filter where Key == ProductFilterKey {
+    public static func name(_ name: String, language: String = "pl_PL") -> Filter<Key> {
+        .init(key: .translate(.name, language: language), value: .like("%\(name)%"))
+    }
+    
+    public static func stock(greaterThan value: Int) -> Filter<Key> {
+        .init(key: .stock(.stock), value: .greaterThan(value))
+    }
+    
+    public static func stock(lessThan value: Int) -> Filter<Key> {
+        .init(key: .stock(.stock), value: .lessThan(value))
+    }
+    
 }

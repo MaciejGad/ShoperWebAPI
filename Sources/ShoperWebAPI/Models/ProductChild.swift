@@ -1,14 +1,14 @@
 import Foundation
 
-struct ProductChild: Codable {
-    let id: Int
-    let bundleId: Int
-    let stockId: Int
-    let productId: Int
-    let stock: Decimal
-    let order: Int
+public struct ProductChild: Codable {
+    public let id: Int
+    public let bundleId: Int
+    public let stockId: Int
+    public let productId: Int
+    public let stock: Decimal
+    public let order: Int
     
-    init(from decoder: any Decoder) throws {
+    public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.id = try container.decodeInt(forKey: .id)
         self.bundleId = try container.decodeInt(forKey: .bundleId)

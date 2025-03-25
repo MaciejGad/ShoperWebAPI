@@ -1,45 +1,45 @@
 import Foundation
 
-struct Stock: Codable {
-    let stockId: Int
-    let productId: Int
-    let extended: Bool
-    let price: Decimal
-    let active: Bool
-    let `default`: Bool
-    let stock: Decimal
-    let warehouses: [String: [String: Double]]?
-    let warnLevel: Decimal?
-    let sold: Decimal
-    let code: String
-    let ean: String
-    let weight: Decimal
-    let weightType: Int
-    let availabilityId: Int?
-    let calculatedAvailabilityId: Int
-    let deliveryId: Int
-    let gfxId: Int?
-    let package: Decimal
-    let priceWholesale: Decimal
-    let priceSpecial: Decimal
-    let calculationUnitId: Int?
-    let calculationUnitRatio: Decimal
-    let historicalLowestPrice: Decimal
-    let wholesaleHistoricalLowestPrice: Decimal
-    let specialHistoricalLowestPrice: Decimal
-    let additionalCodes: AdditionalCodes?
+public struct Stock: Codable {
+    public let stockId: Int
+    public let productId: Int
+    public let extended: Bool
+    public let price: Decimal
+    public let active: Bool
+    public let `default`: Bool
+    public let stock: Decimal
+    public let warehouses: [String: [String: Double]]?
+    public let warnLevel: Decimal?
+    public let sold: Decimal
+    public let code: String
+    public let ean: String
+    public let weight: Decimal
+    public let weightType: Int
+    public let availabilityId: Int?
+    public let calculatedAvailabilityId: Int
+    public let deliveryId: Int
+    public let gfxId: Int?
+    public let package: Decimal
+    public let priceWholesale: Decimal
+    public let priceSpecial: Decimal
+    public let calculationUnitId: Int?
+    public let calculationUnitRatio: Decimal
+    public let historicalLowestPrice: Decimal
+    public let wholesaleHistoricalLowestPrice: Decimal
+    public let specialHistoricalLowestPrice: Decimal
+    public let additionalCodes: AdditionalCodes?
 
-    struct AdditionalCodes: Codable {
-        let bloz12: Int
-        let bloz7: Int
-        let code39: Int
-        let gtu: String
-        let isbn: String
-        let kgo: String
-        let producer: String
-        let warehouse: String
+    public struct AdditionalCodes: Codable {
+        public let bloz12: Int
+        public let bloz7: Int
+        public let code39: Int
+        public let gtu: String
+        public let isbn: String
+        public let kgo: String
+        public let producer: String
+        public let warehouse: String
         
-        init(from decoder: any Decoder) throws {
+        public init(from decoder: any Decoder) throws {
             let container: KeyedDecodingContainer<Stock.AdditionalCodes.CodingKeys> = try decoder.container(keyedBy: Stock.AdditionalCodes.CodingKeys.self)
             self.bloz12 = try container.decodeInt(forKey: Stock.AdditionalCodes.CodingKeys.bloz12)
             self.bloz7 = try container.decodeInt(forKey: Stock.AdditionalCodes.CodingKeys.bloz7)
@@ -52,7 +52,7 @@ struct Stock: Codable {
         }
     }
     
-    init(from decoder: any Decoder) throws {
+    public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.stockId = try container.decodeInt(forKey: .stockId)
         self.productId = try container.decodeInt(forKey: .productId)
