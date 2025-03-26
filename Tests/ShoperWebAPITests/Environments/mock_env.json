@@ -1,6 +1,6 @@
 {
     "password": "please-dont-use-this-password",
     "username": "webapi",
-    "shopUrl": "https://sklep_nie_istnieje.shoparena.pl",
+    "shopURL": "https://sklep_nie_istnieje.shoparena.pl",
     "session": "mock"
 }
