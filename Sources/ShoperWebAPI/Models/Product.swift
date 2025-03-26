@@ -40,7 +40,7 @@ public struct Product: Codable {
     public let mainImage: ProductImage?
     public let stock: Stock
     public let translations: [String: Translation]
-    public let attributes: [String: [String: String]]
+    public let attributes: Attributes
     public let categories: [Int]
     public let specialOffer: SpecialOffer?
     public let unitPriceCalculation: Bool
@@ -89,7 +89,7 @@ public struct Product: Codable {
         self.mainImage = try container.decodeIfPresent(ProductImage.self, forKey: .mainImage)
         self.stock = try container.decode(Stock.self, forKey: .stock)
         self.translations = try container.decode([String : Translation].self, forKey: .translations)
-        self.attributes = try container.decode([String : [String : String]].self, forKey: .attributes)
+        self.attributes = try container.decode(Attributes.self, forKey: .attributes)
         self.categories = try container.decode([Int].self, forKey: .categories)
         self.specialOffer = try container.decodeIfPresent(SpecialOffer.self, forKey: .specialOffer)
         self.unitPriceCalculation = try container.decodeBool(forKey: .unitPriceCalculation)
@@ -101,6 +101,7 @@ public struct Product: Codable {
 
 extension Product: Resource {
     public typealias Key = ProductFilterKey
+    public typealias CreatePayload = CreateProduct
     
     var id: Identifier {
         return productId.map { Identifier.id($0) } ?? .none
@@ -111,17 +112,6 @@ extension Product: Resource {
     }
 }
 
-extension Filter where Key == ProductFilterKey {
-    public static func name(_ name: String, language: String = "pl_PL") -> Filter<Key> {
-        .init(key: .translate(.name, language: language), value: .like("%\(name)%"))
-    }
-    
-    public static func stock(greaterThan value: Int) -> Filter<Key> {
-        .init(key: .stock(.stock), value: .greaterThan(value))
-    }
-    
-    public static func stock(lessThan value: Int) -> Filter<Key> {
-        .init(key: .stock(.stock), value: .lessThan(value))
-    }
+public struct CreateProduct: Encodable {
     
 }

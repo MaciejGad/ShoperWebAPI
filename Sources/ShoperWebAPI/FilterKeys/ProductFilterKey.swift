@@ -108,3 +108,18 @@ public struct ProductFilterKey: FilterKey {
         return ProductFilterKey(rawValue: "stock.\(type.rawValue)")
     }
 }
+
+extension Filter where Key == ProductFilterKey {
+    public static func name(_ name: String, language: String = "pl_PL") -> Filter<Key> {
+        .init(key: .translate(.name, language: language), value: .like("%\(name)%"))
+    }
+    
+    public static func stock(greaterThan value: Int) -> Filter<Key> {
+        .init(key: .stock(.stock), value: .greaterThan(value))
+    }
+    
+    public static func stock(lessThan value: Int) -> Filter<Key> {
+        .init(key: .stock(.stock), value: .lessThan(value))
+    }
+    
+}

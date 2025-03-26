@@ -3,6 +3,7 @@ import Foundation
 enum Endpoint: String {
     case auth = "webapi/rest/auth"
     case products = "webapi/rest/products"
+    case images = "webapi/rest/product-images"
     
     func url(config: Config, id: Int?  = nil, filters: String? = nil) throws -> URL {
         var url = config.shopURL.appendingPathComponent(rawValue)

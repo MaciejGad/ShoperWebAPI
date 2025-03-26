@@ -71,6 +71,8 @@ extension KeyedDecodingContainer {
     func decodeBool(forKey key: Key) throws -> Bool {
         if let value = try? decode(Bool.self, forKey: key) {
             return value
+        } else if let value = try? decode(Int.self, forKey: key) {
+            return value != 0
         } else {
             let rawValue = try decode(String.self, forKey: key)
             guard let value = boolFrom(string: rawValue) else {
