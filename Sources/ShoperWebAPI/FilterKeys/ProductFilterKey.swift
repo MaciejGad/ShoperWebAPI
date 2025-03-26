@@ -121,5 +121,4 @@ extension Filter where Key == ProductFilterKey {
     public static func stock(lessThan value: Int) -> Filter<Key> {
         .init(key: .stock(.stock), value: .lessThan(value))
     }
-    
 }

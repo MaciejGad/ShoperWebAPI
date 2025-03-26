@@ -45,6 +45,9 @@ public final class Client {
         guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
             throw ShoperError.invalidResponse(data, response)
         }
+        if config.storeToFile {
+            saveToFile(data: data, method: .post, endpoint: Endpoint.auth, id: nil)
+        }
         accessToken = try decoder.decode(Auth.self, from: data)
     }
     
@@ -110,7 +113,29 @@ extension Client: ClientProtocol {
         if config.verbose {
             print(String(data: data, encoding: .utf8) ?? "")
         }
+        if config.storeToFile {
+            saveToFile(data: data, method: method, endpoint: endpoint, id: id)
+        }
         return data
     }
-
+    
+    private func saveToFile(data: Data, method: Method, endpoint: Endpoint, id: Int?) {
+        
+        var fileName = "\(method.rawValue)_\(endpoint.rawValue)".replacingOccurrences(of: "/", with: "_")
+        if let id {
+            fileName.append("_\(id)")
+        }
+        let fileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("\(fileName).json")
+        
+        do {
+            try data.write(to: fileURL)
+            if config.verbose {
+                print("Saved response to: \(fileURL.path)")
+            }
+        } catch {
+            print("Error saving file: \(error)")
+        }
+    }
+    
 }

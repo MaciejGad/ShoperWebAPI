@@ -6,16 +6,19 @@ public struct Config {
     public let password: String
     public let defaultLanguage: String
     public let verbose: Bool
+    let storeToFile: Bool
     
     public init(shopURL: URL,
                 login: String,
                 password: String,
                 defaultLanguage: String = "pl_PL",
-                verbose: Bool = false) {
+                verbose: Bool = false,
+                storeToFile: Bool = false) {
         self.shopURL = shopURL
         self.login = login
         self.password = password
         self.defaultLanguage = defaultLanguage
         self.verbose = verbose
+        self.storeToFile = storeToFile
     }
 }

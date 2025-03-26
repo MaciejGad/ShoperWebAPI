@@ -18,7 +18,11 @@ let package = Package(
             name: "ShoperWebAPI"),
         .testTarget(
             name: "ShoperWebAPITests",
-            dependencies: ["ShoperWebAPI"]
+            dependencies: ["ShoperWebAPI"],
+            resources: [
+                .process("Mocks"),
+                .process("Environments")
+            ]
         ),
     ]
 )

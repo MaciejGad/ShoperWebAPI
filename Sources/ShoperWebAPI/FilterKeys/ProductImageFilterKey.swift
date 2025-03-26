@@ -36,3 +36,8 @@ public struct ProductImageFilterKey: FilterKey {
     }
 }
 
+extension Filter where Key == ProductImageFilterKey {
+    public static func productId(_ value: Int) -> Filter<Key> {
+        return .init(key: .parameter(.productId), value: .equal("\(value)"))
+    }
+}
