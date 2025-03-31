@@ -26,16 +26,15 @@ class MockURLProtocol: URLProtocol {
             guard let client else {
                 throw MockError.noClient
             }
+            
             let path = url.path()
-            let filename = method + path.replacingOccurrences(of: "/", with: "_")
-            guard let filepath = Bundle.module.path(forResource: filename, ofType: "json") else {
-                throw MockError.cantFindMockFile(filename)
-            }
+            let query = url.query
+            let filepath = try mockFilePath(method: method, path: path, query: query)
             let data = try Data(contentsOf: URL(fileURLWithPath: filepath))
             guard let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: ["Content-Type": "application/json"]) else {
                 throw MockError.cantCreateResponse
             }
-            print("Loading response for \(method) \(path) from \(filename).json")
+            print("Loading response for \(method) \(path) from \(filepath)")
             client.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
             client.urlProtocol(self, didLoad: data)
             client.urlProtocolDidFinishLoading(self)
