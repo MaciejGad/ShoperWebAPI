@@ -62,3 +62,20 @@ import Foundation
     let imageId = try await ProductImage.create(client: client, payload: ProductImage.CreatePayload.image(content: data, productId: 36, name: "mock_image.jpg"))
     print(imageId)
 }
+
+@Test func testUpdateProduct() async throws {
+    let client = try makeClient()
+    let updateProduct = UpdateProduct(stock: .init(stock: 100))
+    try await Product.update(client: client, id: 36, payload: updateProduct)
+}
+
+@Test func testFetchProductByNameAndUpdateStock() async throws {
+    let client = try makeClient()
+    let products = try await Product.list(client: client, filters: [.name("okulary")]).list
+    let product = try #require(products.first)
+    print(product)
+    let updateProduct = UpdateProduct(stock: .init(stock: 200))
+    let productId = try #require(product.productId)
+    try await Product.update(client: client, id: productId, payload: updateProduct)
+}
+    

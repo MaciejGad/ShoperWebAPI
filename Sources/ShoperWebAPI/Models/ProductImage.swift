@@ -43,6 +43,7 @@ public struct ProductImage: Codable {
 extension ProductImage: Resource {
     public typealias Key = ProductImageFilterKey
     public typealias CreatePayload = CreateProductImage
+    public typealias UpdatePayload = UpdateProductImage
     
     var id: Identifier {
         return gfxId.map { Identifier.id($0) } ?? .none

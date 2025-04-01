@@ -102,6 +102,7 @@ public struct Product: Codable {
 extension Product: Resource {
     public typealias Key = ProductFilterKey
     public typealias CreatePayload = CreateProduct
+    public typealias UpdatePayload = UpdateProduct
     
     var id: Identifier {
         return productId.map { Identifier.id($0) } ?? .none
@@ -110,8 +111,4 @@ extension Product: Resource {
     static var endpoint: Endpoint {
         .products
     }
-}
-
-public struct CreateProduct: Encodable {
-    
 }
