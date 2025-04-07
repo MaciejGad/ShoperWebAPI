@@ -45,11 +45,11 @@ extension ProductImage: Resource {
     public typealias CreatePayload = CreateProductImage
     public typealias UpdatePayload = UpdateProductImage
     
-    var id: Identifier {
+    public var id: Identifier {
         return gfxId.map { Identifier.id($0) } ?? .none
     }
     
-    static var endpoint: Endpoint {
+    static public var endpoint: Endpoint {
         .images
     }
 }

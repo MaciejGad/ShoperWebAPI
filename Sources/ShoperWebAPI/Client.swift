@@ -1,7 +1,7 @@
 import Foundation
 
-protocol ClientProtocol {
-    func get(endpoint: Endpoint, id: Int?, filters: Filters?) async throws -> Data
+public protocol ClientProtocol {
+    func get(endpoint: Endpoint, id: Int?, filters: Filters?, page: Int?) async throws -> Data
     func post(endpoint: Endpoint, payload: any Encodable) async throws -> Data
     func put(endpoint: Endpoint, id: Int, payload: any Encodable) async throws -> Data
     func delete(endpoint: Endpoint, id: Int) async throws -> Data
@@ -46,7 +46,7 @@ public final class Client {
             throw ShoperError.invalidResponse(data, response)
         }
         if config.storeToFile {
-            saveToFile(data: data, method: .post, endpoint: Endpoint.auth, id: nil)
+            saveToFile(data: data, method: .post, url: url)
         }
         accessToken = try decoder.decode(Auth.self, from: data)
     }
@@ -66,27 +66,27 @@ public final class Client {
 @available(macOS 12.0, *)
 extension Client: ClientProtocol {
     
-    func get(endpoint: Endpoint, id: Int?, filters: Filters?) async throws -> Data {
-        try await request(endpoint, id: id, method: .get, filters: filters)
+    public func get(endpoint: Endpoint, id: Int?, filters: Filters?, page: Int?) async throws -> Data {
+        try await request(endpoint, id: id, method: .get, filters: filters, page: page)
     }
     
-    func post(endpoint: Endpoint, payload: any Encodable) async throws -> Data {
+    public func post(endpoint: Endpoint, payload: any Encodable) async throws -> Data {
         try await request(endpoint, id: nil, method: .post, payload: payload)
     }
     
-    func put(endpoint: Endpoint, id: Int, payload: any Encodable) async throws -> Data {
+    public func put(endpoint: Endpoint, id: Int, payload: any Encodable) async throws -> Data {
         try await request(endpoint, id: id, method: .put, payload: payload)
     }
     
-    func delete(endpoint: Endpoint, id: Int) async throws -> Data {
+    public func delete(endpoint: Endpoint, id: Int) async throws -> Data {
         try await request(endpoint, id: id, method: .delete)
     }
     
-    func decode<Model: Decodable>(data: Data) throws -> Model {
+    public func decode<Model: Decodable>(data: Data) throws -> Model {
         try decoder.decode(Model.self, from: data)
     }
     
-    private func request(_ endpoint: Endpoint, id: Int?, method: Method, payload: (any Encodable)? = nil, filters: Filters? = nil) async throws -> Data {
+    private func request(_ endpoint: Endpoint, id: Int?, method: Method, payload: (any Encodable)? = nil, filters: Filters? = nil, page: Int? = nil) async throws -> Data {
         let filtersString: String?
         if let filters {
             let filtersData = try filterEncoder.encode(filters)
@@ -94,7 +94,7 @@ extension Client: ClientProtocol {
         } else {
             filtersString = nil
         }
-        let url = try endpoint.url(config: config, id: id, filters: filtersString)
+        let url = try endpoint.url(config: config, id: id, filters: filtersString, page: page)
         if config.verbose {
             print("Url: \(url)")
         }
@@ -114,21 +114,17 @@ extension Client: ClientProtocol {
             print(String(data: data, encoding: .utf8) ?? "")
         }
         if config.storeToFile {
-            saveToFile(data: data, method: method, endpoint: endpoint, id: id)
+            saveToFile(data: data, method: method, url: url)
         }
         return data
     }
     
-    private func saveToFile(data: Data, method: Method, endpoint: Endpoint, id: Int?) {
-        
-        var fileName = "\(method.rawValue)_\(endpoint.rawValue)".replacingOccurrences(of: "/", with: "_")
-        if let id {
-            fileName.append("_\(id)")
-        }
-        let fileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("\(fileName).json")
-        
+    private func saveToFile(data: Data, method: Method, url: URL) {
         do {
+            let fileName = try mockFilename(method: method.rawValue, path: url.path, query: url.query)
+            let fileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+                .appendingPathComponent("mocks")
+                .appendingPathComponent("\(fileName).json")
             try data.write(to: fileURL)
             if config.verbose {
                 print("Saved response to: \(fileURL.path)")

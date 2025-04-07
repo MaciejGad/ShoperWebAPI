@@ -1,13 +1,13 @@
 import Foundation
 
-struct Filters: Encodable {
+public struct Filters: Encodable {
     let filters: [AnyFilter]
     
-    init(_ filters: [AnyFilter]) {
+    public init(_ filters: [AnyFilter]) {
         self.filters = filters
     }
     
-    func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: DynamicKey.self)
         for filter in filters {
             try container.encode(filter.value, forKey: DynamicKey(stringValue: filter.key))
@@ -15,7 +15,7 @@ struct Filters: Encodable {
     }
 }
 
-struct AnyFilter: Encodable {
+public struct AnyFilter: Encodable {
     let key: String
     let value: FilterValue
     

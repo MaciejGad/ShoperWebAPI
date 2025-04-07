@@ -16,7 +16,7 @@ public struct UpdateStock: Codable {
     /// weight of the item
     public let weight: Decimal?
     
-    init(price: Decimal? = nil, stock: Decimal? = nil, warnLevel: Decimal? = nil, sold: Decimal? = nil, weight: Decimal? = nil) {
+    public init(price: Decimal? = nil, stock: Decimal? = nil, warnLevel: Decimal? = nil, sold: Decimal? = nil, weight: Decimal? = nil) {
         self.price = price
         self.stock = stock
         self.warnLevel = warnLevel

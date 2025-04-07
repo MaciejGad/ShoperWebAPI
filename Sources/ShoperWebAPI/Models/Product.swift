@@ -104,11 +104,11 @@ extension Product: Resource {
     public typealias CreatePayload = CreateProduct
     public typealias UpdatePayload = UpdateProduct
     
-    var id: Identifier {
+    public var id: Identifier {
         return productId.map { Identifier.id($0) } ?? .none
     }
     
-    static var endpoint: Endpoint {
+    public static var endpoint: Endpoint {
         .products
     }
 }

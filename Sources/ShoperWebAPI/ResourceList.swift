@@ -1,10 +1,10 @@
 import Foundation
 
-struct ResourceList<Model>: Decodable where Model: Resource {
-    let count: Int
-    let pages: Int
-    let page: Int
-    let list: [Model]
+public struct ResourceList<Model>: Decodable where Model: Resource {
+    public let count: Int
+    public let pages: Int
+    public let page: Int
+    public let list: [Model]
     
     enum CodingKeys: CodingKey {
         case count
@@ -13,7 +13,7 @@ struct ResourceList<Model>: Decodable where Model: Resource {
         case list
     }
     
-    init(from decoder: any Decoder) throws {
+    public init(from decoder: any Decoder) throws {
         let container: KeyedDecodingContainer<ResourceList<Model>.CodingKeys> = try decoder.container(keyedBy: ResourceList<Model>.CodingKeys.self)
         self.count = try container.decodeInt(forKey: ResourceList<Model>.CodingKeys.count)
         self.pages = try container.decode(Int.self, forKey: ResourceList<Model>.CodingKeys.pages)

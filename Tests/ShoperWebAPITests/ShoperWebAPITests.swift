@@ -1,13 +1,7 @@
 import Testing
 import Foundation
 
-@testable import ShoperWebAPI
-
-@Test func testFetchAccessToken() async throws {
-    let client = try makeClient()
-    let accessToken = try await client.getAccessToken()
-    print(accessToken)
-}
+import ShoperWebAPI
 
 @Test func testFetchProducts() async throws {
     let client = try makeClient()
@@ -26,7 +20,7 @@ import Foundation
 
 @Test func testFetchOneProduct() async throws {
     let client = try makeClient()
-    let product = try await Product.read(client: client, id: 36)
+    let product = try await Product.get(client: client, id: 36)
     print("----------------")
     print(product)
 }
@@ -45,7 +39,7 @@ import Foundation
 
 @Test func testFetchOneImage() async throws {
     let client = try makeClient()
-    let image = try await ProductImage.read(client: client, id: 183)
+    let image = try await ProductImage.get(client: client, id: 183)
     print(image)
 }
 
@@ -79,3 +73,20 @@ import Foundation
     try await Product.update(client: client, id: productId, payload: updateProduct)
 }
     
+@Test func testFetchProductsPageTwo() async throws {
+    let client = try makeClient()
+    let productList = try await Product.list(client: client, filters: [
+        .stock(greaterThan: 0)
+    ], page: 2)
+    #expect(productList.page == 2)
+    #expect(productList.count == 125)
+    #expect(productList.pages == 13)
+    let products = productList.list
+    print(productList.count)
+    #expect(products.count == 10)
+    for product in products {
+        let plTranslation = try #require(product.translations["pl_PL"])
+        let mainImage = try #require(product.mainImage)
+        print("\(product.id) \(plTranslation.name): \(product.stock.stock) \(mainImage)")
+    }
+}

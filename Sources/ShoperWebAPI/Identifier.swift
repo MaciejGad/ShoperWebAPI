@@ -1,10 +1,10 @@
 import Foundation
 
-enum Identifier: Codable {
+public enum Identifier: Codable {
     case id(Int)
     case none
     
-    init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         if let id = try? container.decode(Int.self) {
             self = .id(id)
@@ -13,7 +13,7 @@ enum Identifier: Codable {
         }
     }
     
-    func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         switch self {
         case .id(let id):
