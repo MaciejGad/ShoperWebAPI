@@ -309,28 +309,50 @@ The SDK includes comprehensive tests with mock data.
 Run tests locally using:
 
 ```bash
+# Run tests with parallel execution (default)
 swift test
+
+# Run tests sequentially (no parallel execution)
+swift test --no-parallel
 ```
 
 ### Docker Testing (Linux/Ubuntu LTS)
 
 To run tests on Linux using Docker, you have several options:
 
-#### Option 1: Using the convenience script
+#### Option 1: Using the convenience scripts
 ```bash
+# Run tests with parallel execution (default)
 ./run-tests-docker.sh
+
+# Run tests sequentially (no parallel execution)
+./run-tests-docker-serial.sh
 ```
 
-#### Option 2: Using Docker Compose directly
+#### Option 2: Using Make targets
 ```bash
-# Build and run tests
+# Run tests locally
+make test                 # with parallel execution
+make test-serial          # without parallel execution
+
+# Run tests in Docker
+make test-docker          # with parallel execution
+make test-docker-serial   # without parallel execution
+```
+
+#### Option 3: Using Docker Compose directly
+```bash
+# Build and run tests (with parallel execution)
 docker-compose run --rm shoper-webapi-tests
+
+# Run tests without parallel execution
+docker-compose run --rm shoper-webapi-tests swift test --no-parallel
 
 # Or for interactive development
 docker-compose run --rm shoper-webapi-dev
 ```
 
-#### Option 3: Using Docker directly
+#### Option 4: Using Docker directly
 ```bash
 # Build the image
 docker build -t shoper-webapi .
@@ -343,6 +365,17 @@ docker run --rm -it shoper-webapi bash
 ```
 
 The Docker environment uses Ubuntu LTS with Swift 6.0, ensuring compatibility with Linux deployment environments.
+
+#### When to Use Serial Execution
+
+Use serial execution (`--no-parallel`) when:
+- **Debugging tests**: Easier to trace execution flow and identify issues
+- **Shared resources**: Tests that modify shared state or files
+- **Resource constraints**: Limited CPU or memory environments
+- **Deterministic output**: When you need consistent test execution order
+- **Race conditions**: When parallel execution causes intermittent failures
+
+By default, Swift Testing runs tests in parallel for faster execution, but serial execution provides more predictable behavior for debugging and development.
 
 ## Contributing
 
