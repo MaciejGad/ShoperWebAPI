@@ -1,4 +1,7 @@
 import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 func mockUrlSession() -> URLSession {
     let configuration = URLSessionConfiguration.ephemeral

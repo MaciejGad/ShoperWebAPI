@@ -302,11 +302,47 @@ This SDK is based on the official [Shoper Web API](https://developers.shoper.pl/
 
 ## Testing
 
-The SDK includes comprehensive tests with mock data. Run tests using:
+The SDK includes comprehensive tests with mock data. 
+
+### Local Testing
+
+Run tests locally using:
 
 ```bash
 swift test
 ```
+
+### Docker Testing (Linux/Ubuntu LTS)
+
+To run tests on Linux using Docker, you have several options:
+
+#### Option 1: Using the convenience script
+```bash
+./run-tests-docker.sh
+```
+
+#### Option 2: Using Docker Compose directly
+```bash
+# Build and run tests
+docker-compose run --rm shoper-webapi-tests
+
+# Or for interactive development
+docker-compose run --rm shoper-webapi-dev
+```
+
+#### Option 3: Using Docker directly
+```bash
+# Build the image
+docker build -t shoper-webapi .
+
+# Run tests
+docker run --rm shoper-webapi
+
+# Or run interactively
+docker run --rm -it shoper-webapi bash
+```
+
+The Docker environment uses Ubuntu LTS with Swift 6.0, ensuring compatibility with Linux deployment environments.
 
 ## Contributing
 
