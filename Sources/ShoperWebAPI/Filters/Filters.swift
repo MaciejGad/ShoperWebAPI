@@ -3,6 +3,10 @@ import Foundation
 public struct Filters: Encodable {
     let filters: [AnyFilter]
     
+    var isEmpty: Bool {
+        filters.isEmpty
+    }
+    
     public init(_ filters: [AnyFilter]) {
         self.filters = filters
     }

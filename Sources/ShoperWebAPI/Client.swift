@@ -1,7 +1,7 @@
 import Foundation
 
 public protocol ClientProtocol {
-    func get(endpoint: Endpoint, id: Int?, filters: Filters?, page: Int?) async throws -> Data
+    func get(endpoint: Endpoint, id: Int?, filters: Filters?, sort: SortOrder?, page: Int?) async throws -> Data
     func post(endpoint: Endpoint, payload: any Encodable) async throws -> Data
     func put(endpoint: Endpoint, id: Int, payload: any Encodable) async throws -> Data
     func delete(endpoint: Endpoint, id: Int) async throws -> Data
@@ -66,8 +66,8 @@ public final class Client {
 @available(macOS 12.0, *)
 extension Client: ClientProtocol {
     
-    public func get(endpoint: Endpoint, id: Int?, filters: Filters?, page: Int?) async throws -> Data {
-        try await request(endpoint, id: id, method: .get, filters: filters, page: page)
+    public func get(endpoint: Endpoint, id: Int?, filters: Filters?, sort: SortOrder?, page: Int?) async throws -> Data {
+        try await request(endpoint, id: id, method: .get, filters: filters, sort: sort, page: page)
     }
     
     public func post(endpoint: Endpoint, payload: any Encodable) async throws -> Data {
@@ -86,15 +86,15 @@ extension Client: ClientProtocol {
         try decoder.decode(Model.self, from: data)
     }
     
-    private func request(_ endpoint: Endpoint, id: Int?, method: Method, payload: (any Encodable)? = nil, filters: Filters? = nil, page: Int? = nil) async throws -> Data {
+    private func request(_ endpoint: Endpoint, id: Int?, method: Method, payload: (any Encodable)? = nil, filters: Filters? = nil, sort: SortOrder? = nil, page: Int? = nil) async throws -> Data {
         let filtersString: String?
-        if let filters {
+        if let filters, !filters.isEmpty {
             let filtersData = try filterEncoder.encode(filters)
             filtersString = String(decoding: filtersData, as: UTF8.self)
         } else {
             filtersString = nil
         }
-        let url = try endpoint.url(config: config, id: id, filters: filtersString, page: page)
+        let url = try endpoint.url(config: config, id: id, filters: filtersString, sort: sort, page: page)
         if config.verbose {
             print("Url: \(url)")
         }

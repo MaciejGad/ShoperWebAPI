@@ -90,3 +90,20 @@ import ShoperWebAPI
         print("\(product.id) \(plTranslation.name): \(product.stock.stock) \(mainImage)")
     }
 }
+
+@Test func testSort() async throws {
+    let client = try makeClient()
+    let productList = try await Product.list(client: client, sort: [
+        .name(direction: .ascending)
+    ])
+    let products = productList.list
+    print(productList.count)
+    // in mocks data isn't sorted but
+    // the url should be correct
+    // if data is loaded
+    for product in products {
+        let plTranslation = try #require(product.translations["pl_PL"])
+        let mainImage = try #require(product.mainImage)
+        print("\(product.id) \(plTranslation.name): \(product.stock.stock) \(mainImage)")
+    }
+}

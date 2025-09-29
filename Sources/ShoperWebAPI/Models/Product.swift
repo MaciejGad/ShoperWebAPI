@@ -103,6 +103,7 @@ extension Product: Resource {
     public typealias Key = ProductFilterKey
     public typealias CreatePayload = CreateProduct
     public typealias UpdatePayload = UpdateProduct
+    public typealias Sort = ProductSortKey
     
     public var id: Identifier {
         return productId.map { Identifier.id($0) } ?? .none
