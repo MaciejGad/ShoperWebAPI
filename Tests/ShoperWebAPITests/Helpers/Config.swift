@@ -10,7 +10,7 @@ func makeClient() throws -> Client {
     }
     let data = try Data(contentsOf: mockEnvPath)
     let environment = try JSONDecoder().decode(Environment.self, from: data)
-    let config = Config(shopURL: environment.shopURL, login: environment.username, password: environment.password, verbose: true, storeToFile: true)
+    let config = Config(shopURL: environment.shopURL, login: environment.username, password: environment.password, verbose: true, storeToFile: false)
     return Client(config: config, session: environment.session)
 }
 

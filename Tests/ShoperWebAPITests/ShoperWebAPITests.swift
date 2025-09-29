@@ -110,3 +110,10 @@ import ShoperWebAPI
         print("\(product.id) \(plTranslation.name): \(product.stock.stock) \(mainImage)")
     }
 }
+
+@Test func testLimit() async throws {
+    let client = try makeClient()
+    let productList = try await Product.list(client: client, filters: [], sort: [], page: nil, limit: 3)
+    let products = productList.list
+    #expect(products.count == 3)
+}

@@ -42,6 +42,7 @@ class MockURLProtocol: URLProtocol {
             client.urlProtocol(self, didLoad: data)
             client.urlProtocolDidFinishLoading(self)
         } catch {
+            print(error)
             client?.urlProtocol(self, didFailWithError: error)
         }
     }

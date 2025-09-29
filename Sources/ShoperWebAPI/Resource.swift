@@ -16,6 +16,7 @@ public protocol Resource: Decodable {
     static func list(client: ClientProtocol, sort: [Order<Sort>]) async throws -> ResourceList<Self>
     static func list(client: ClientProtocol, sort: [Order<Sort>], page: Int?) async throws -> ResourceList<Self>
     static func list(client: ClientProtocol, filters: [Filter<Key>], sort: [Order<Sort>], page: Int?) async throws -> ResourceList<Self>
+    static func list(client: ClientProtocol, filters: [Filter<Key>], sort: [Order<Sort>], page: Int?, limit: Int?) async throws -> ResourceList<Self>
     static func get(client: ClientProtocol, id: Int) async throws -> Self
     static func create(client: ClientProtocol, payload: CreatePayload) async throws -> Int
     static func update(client: ClientProtocol, id: Int, payload: UpdatePayload) async throws
@@ -46,14 +47,18 @@ extension Resource {
     static public func list(client: ClientProtocol, sort: [Order<Sort>], page: Int?) async throws -> ResourceList<Self> {
         try await list(client: client, filters: [], sort: sort, page: page)
     }
-
+    
     static public func list(client: ClientProtocol, filters: [Filter<Key>], sort: [Order<Sort>], page: Int?) async throws -> ResourceList<Self> {
-        let data = try await client.get(endpoint: Self.endpoint, id: nil, filters: Filters(filters.map { AnyFilter($0) }), sort: .init(sort), page: page)
+        try await list(client: client, filters: filters, sort: sort, page: page, limit: nil)
+    }
+
+    static public func list(client: ClientProtocol, filters: [Filter<Key>], sort: [Order<Sort>], page: Int?, limit: Int?) async throws -> ResourceList<Self> {
+        let data = try await client.get(endpoint: Self.endpoint, id: nil, filters: Filters(filters.map { AnyFilter($0) }), sort: .init(sort), page: page, limit: limit)
         return try client.decode(data: data)
     }
     
     static public func get(client: ClientProtocol, id: Int) async throws -> Self {
-        let data = try await client.get(endpoint: Self.endpoint, id: id, filters: nil, sort: nil, page: nil)
+        let data = try await client.get(endpoint: Self.endpoint, id: id, filters: nil, sort: nil, page: nil, limit: nil)
         return try client.decode(data: data)
     }
     

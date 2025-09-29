@@ -5,7 +5,7 @@ public enum Endpoint: String {
     case products = "webapi/rest/products"
     case images = "webapi/rest/product-images"
     
-    func url(config: Config, id: Int?  = nil, filters: String? = nil, sort: SortOrder? = nil, page: Int? = nil) throws -> URL {
+    func url(config: Config, id: Int?  = nil, filters: String? = nil, sort: SortOrder? = nil, page: Int? = nil, limit: Int? = nil) throws -> URL {
         var url = config.shopURL.appendingPathComponent(rawValue)
         if let id {
             url.appendPathComponent(String(id))
@@ -21,6 +21,9 @@ public enum Endpoint: String {
             for order in sort.values {
                 queryItems.append(.init(name: "order[]", value: order))
             }
+        }
+        if let limit {
+            queryItems.append(.init(name: "limit", value: String(limit)))
         }
             
         guard !queryItems.isEmpty else {
