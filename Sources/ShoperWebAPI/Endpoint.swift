@@ -19,7 +19,7 @@ public enum Endpoint: String {
         }
         if let sort, !sort.values.isEmpty {
             for order in sort.values {
-                queryItems.append(.init(name: "sort[]", value: order))
+                queryItems.append(.init(name: "order[]", value: order))
             }
         }
             
