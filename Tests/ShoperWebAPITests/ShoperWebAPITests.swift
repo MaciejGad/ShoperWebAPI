@@ -201,8 +201,8 @@ import ShoperWebAPI
     #expect(order.email == "jan.kowalski@example.pl")
     #expect(order.paid == Decimal(1))
     let sum = try #require(order.sum)
-    #expect(sum == Decimal(string: "580.00"))
     #expect(order.deliveryAddress?.city == "Warszawa")
+    #expect(sum == Decimal(sign: .plus, exponent: -2, significand: 58000))
     print(order)
 }
 
