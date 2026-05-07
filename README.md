@@ -189,6 +189,60 @@ let createPayload = CreateProductImage.image(
 let imageId = try await ProductImage.create(client: client, payload: createPayload)
 ```
 
+## Working with Order Products
+
+Order products represent line items within an order. Use this resource to fetch which products were purchased and in what quantities.
+
+### Fetching Order Products
+
+```swift
+// Get all order products
+let list = try await OrderProduct.list(client: client)
+print("Total order products: \(list.count)")
+
+// Get products from a specific order
+let orderItems = try await OrderProduct.list(client: client, filters: [
+    .orderId(100)
+])
+
+for item in orderItems.list {
+    print("Product: \(item.name ?? "") x\(item.quantity ?? 0) @ \(item.price ?? 0)")
+}
+```
+
+### Get a Specific Order Product
+
+```swift
+let item = try await OrderProduct.get(client: client, id: 1)
+print("Order product: \(item.name ?? "") qty: \(item.quantity ?? 0)")
+```
+
+### Joining Orders with Their Products
+
+```swift
+// Fetch orders first, then load their products
+let orderProducts = try await OrderProduct.list(client: client, filters: [
+    .orderId(orderId)
+])
+
+let productsByOrderId = Dictionary(grouping: orderProducts.list) { $0.orderId }
+```
+
+### Sorting Order Products
+
+```swift
+let sorted = try await OrderProduct.list(client: client, sort: [
+    .price(direction: .descending)
+])
+```
+
+### Pagination
+
+```swift
+let page2 = try await OrderProduct.list(client: client, page: 2, limit: 10)
+print("Page \(page2.page) of \(page2.pages)")
+```
+
 ## Available Filter Options
 
 ### Product Filters
@@ -274,6 +328,7 @@ Currently supported resources:
 
 - **Products** (`Product`) - Complete product management
 - **Product Images** (`ProductImage`) - Product image management
+- **Order Products** (`OrderProduct`) - Read order line items (products within orders)
 
 More resources will be added in future versions.
 
