@@ -268,4 +268,9 @@ import ShoperWebAPI
         print(" * \(order.id) \(order.date ?? "") \(order.email ?? "")")
     }
     #expect(orders.count == 3)
+    // Order 102 has null confirm_date; orders 101 and 100 have valid dates.
+    let guestOrder = try #require(orders.first(where: { $0.orderId == 102 }))
+    #expect(guestOrder.confirmDate == nil)
+    let confirmedOrder = try #require(orders.first(where: { $0.orderId == 101 }))
+    #expect(confirmedOrder.confirmDate == "2023-10-11 09:30:00")
 }
