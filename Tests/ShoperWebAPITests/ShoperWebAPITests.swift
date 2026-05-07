@@ -190,9 +190,10 @@ import ShoperWebAPI
     #expect(list.list.count == 1)
 
     let order = try #require(list.list.first)
-    #expect(order.orderId == 100)
-    #expect(order.email == "jan.kowalski@example.pl")
-    #expect(order.deliveryAddress?.city == "Warszawa")
+    #expect(order.orderId == 1365)
+    #expect(order.email == "test@test.com")
+    #expect(order.deliveryAddress?.city == "DDDDD")
+    #expect(order.confirmDate == nil)
 
     let deliveryDate = try #require(order.deliveryDate)
     let shippingCost = try #require(order.shippingCost)
