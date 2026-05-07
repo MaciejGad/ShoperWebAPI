@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Attributes: Codable {
+public struct Attributes: Codable, Sendable {
     public let values: [String: Attribute]
     
     public init(from decoder: any Decoder) throws {
@@ -25,7 +25,7 @@ public struct Attributes: Codable {
     }
 }
 
-public struct Attribute: Codable {
+public struct Attribute: Codable, Sendable {
     public let values: [String: String]
     
     public init(from decoder: any Decoder) throws {
@@ -49,8 +49,3 @@ public struct Attribute: Codable {
         }
     }
 }
-
-
-//{"5":{"16":"TAK","15":"30\u00b0C","14":"TAK","10":"100% bawe\u0142na"},"6":{"22":"Tak","19":"Zamek b\u0142yskawiczny","18":"Kolor jednolity"},"7":{"26":"Standardowa","23":"Regular Fit"}}
-
-// {"5":[],"6":[],"7":[]}

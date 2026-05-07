@@ -1,6 +1,6 @@
 import Foundation
 
-public struct OrderProduct: Codable {
+public struct OrderProduct: Codable, Sendable {
     public let orderProductId: Int?
     public let orderId: Int?
     public let productId: Int?

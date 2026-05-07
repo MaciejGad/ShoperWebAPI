@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Translation: Codable {
+public struct Translation: Codable, Sendable {
     public let translationId: Int
     public let productId: Int
     public let name: String

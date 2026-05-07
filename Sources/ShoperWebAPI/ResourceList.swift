@@ -1,6 +1,6 @@
 import Foundation
 
-public struct ResourceList<Model>: Decodable where Model: Resource {
+public struct ResourceList<Model>: Decodable, Sendable where Model: Resource & Sendable {
     public let count: Int
     public let pages: Int
     public let page: Int

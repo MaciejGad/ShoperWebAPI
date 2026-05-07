@@ -1,6 +1,6 @@
 import Foundation
 
-public struct SafetyInformation: Codable {
+public struct SafetyInformation: Codable, Sendable {
     public let gpsrProducerId: Int?
     public let gpsrImporterId: Int?
     public let gpsrResponsibleId: Int?

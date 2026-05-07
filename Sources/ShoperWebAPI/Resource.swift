@@ -1,6 +1,6 @@
 import Foundation
 
-public protocol Resource: Decodable {
+public protocol Resource: Decodable, Sendable {
     associatedtype Key: FilterKey
     associatedtype Sort: SortKey
     associatedtype CreatePayload: Encodable

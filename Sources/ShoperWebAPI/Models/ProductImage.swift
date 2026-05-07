@@ -1,6 +1,6 @@
 import Foundation
 
-public struct ProductImage: Codable {
+public struct ProductImage: Codable, Sendable {
     public let gfxId: Int?
     public let productId: Int?
     public let main: Bool
@@ -24,7 +24,7 @@ public struct ProductImage: Codable {
         self.translations = try container.decodeIfPresent([String: Translation].self, forKey: .translations)
     }
     
-    public struct Translation: Codable {
+    public struct Translation: Codable, Sendable {
         public let translationId: Int
         public let gfxId: Int
         public let name: String

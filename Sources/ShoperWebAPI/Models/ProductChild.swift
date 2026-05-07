@@ -1,6 +1,6 @@
 import Foundation
 
-public struct ProductChild: Codable {
+public struct ProductChild: Codable, Sendable {
     public let id: Int
     public let bundleId: Int
     public let stockId: Int

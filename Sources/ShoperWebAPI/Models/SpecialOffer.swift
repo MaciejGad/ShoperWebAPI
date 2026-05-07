@@ -1,6 +1,6 @@
 import Foundation
 
-public struct SpecialOffer: Codable {
+public struct SpecialOffer: Codable, Sendable {
     public let promoId: Int
     public let dateFrom: String
     public let dateTo: String

@@ -1,6 +1,6 @@
 import Foundation
 
-public struct OrderAdditionalField: Codable {
+public struct OrderAdditionalField: Codable, Sendable {
     public let fieldId: Int?
     public let type: Int?
     public let locate: Int?

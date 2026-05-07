@@ -1,6 +1,6 @@
 import Foundation
 
-public struct PickupPointData: Codable {
+public struct PickupPointData: Codable, Sendable {
     public let point: String?
     public let supplier: String?
     public let supplierName: String?

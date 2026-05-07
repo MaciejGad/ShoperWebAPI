@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Stock: Codable {
+public struct Stock: Codable, Sendable {
     public let stockId: Int
     public let productId: Int
     public let extended: Bool
@@ -29,7 +29,7 @@ public struct Stock: Codable {
     public let specialHistoricalLowestPrice: Decimal
     public let additionalCodes: AdditionalCodes?
 
-    public struct AdditionalCodes: Codable {
+    public struct AdditionalCodes: Codable, Sendable {
         public let bloz12: Int
         public let bloz7: Int
         public let code39: Int
