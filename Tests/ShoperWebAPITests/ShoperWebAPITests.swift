@@ -188,9 +188,21 @@ import ShoperWebAPI
     #expect(list.count == 1)
     #expect(list.page == 1)
     #expect(list.list.count == 1)
-    for order in list.list {
-        print("\(order.id) email:\(order.email ?? "") sum:\(order.sum ?? 0)")
-    }
+
+    let order = try #require(list.list.first)
+    #expect(order.orderId == 100)
+    #expect(order.email == "jan.kowalski@example.pl")
+    #expect(order.deliveryAddress?.city == "Warszawa")
+
+    let deliveryDate = try #require(order.deliveryDate)
+    let shippingCost = try #require(order.shippingCost)
+    let pickupPointData = try #require(order.pickupPointData)
+
+    #expect(!String(describing: deliveryDate).isEmpty)
+    #expect(shippingCost >= 0)
+    #expect(!String(describing: pickupPointData).isEmpty)
+
+    print("\(order.id) email:\(order.email ?? "") sum:\(order.sum ?? 0)")
 }
 
 @Test func testFetchOneOrder() async throws {
