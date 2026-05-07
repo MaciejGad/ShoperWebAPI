@@ -117,3 +117,66 @@ import ShoperWebAPI
     let products = productList.list
     #expect(products.count == 3)
 }
+
+@Test func testFetchOrderProducts() async throws {
+    let client = try makeClient()
+    let list = try await OrderProduct.list(client: client)
+    #expect(list.count == 3)
+    #expect(list.page == 1)
+    let items = list.list
+    #expect(items.count == 3)
+    for item in items {
+        print("\(item.id) order:\(item.orderId ?? -1) product:\(item.productId ?? -1) \(item.name ?? "") qty:\(item.quantity ?? 0)")
+    }
+}
+
+@Test func testFetchOneOrderProduct() async throws {
+    let client = try makeClient()
+    let item = try await OrderProduct.get(client: client, id: 1)
+    #expect(item.orderProductId == 1)
+    #expect(item.orderId == 100)
+    #expect(item.productId == 36)
+    #expect(item.name == "Okulary słoneczne Orange")
+    print(item)
+}
+
+@Test func testFetchOrderProductsByOrderId() async throws {
+    let client = try makeClient()
+    let list = try await OrderProduct.list(client: client, filters: [
+        .orderId(100)
+    ])
+    #expect(list.count == 2)
+    let items = list.list
+    #expect(items.count == 2)
+    for item in items {
+        let orderId = try #require(item.orderId)
+        #expect(orderId == 100)
+    }
+}
+
+@Test func testOrderProductsPageTwo() async throws {
+    let client = try makeClient()
+    let list = try await OrderProduct.list(client: client, page: 2)
+    #expect(list.page == 2)
+    #expect(list.count == 15)
+    #expect(list.pages == 2)
+    #expect(list.list.count == 2)
+}
+
+@Test func testOrderProductsLimit() async throws {
+    let client = try makeClient()
+    let list = try await OrderProduct.list(client: client, filters: [], sort: [], page: nil, limit: 3)
+    #expect(list.list.count == 3)
+}
+
+@Test func testOrderProductsSortByPrice() async throws {
+    let client = try makeClient()
+    let list = try await OrderProduct.list(client: client, sort: [
+        .price(direction: .descending)
+    ])
+    let items = list.list
+    print("Order products sorted by price desc:")
+    for item in items {
+        print(" * \(item.name ?? "") price:\(item.price ?? 0)")
+    }
+}
