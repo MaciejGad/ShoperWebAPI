@@ -185,12 +185,25 @@ import ShoperWebAPI
 @Test func testFetchOrders() async throws {
     let client = try makeClient()
     let list = try await ShopOrder.list(client: client)
-    #expect(list.count == 3)
+    #expect(list.count == 1)
     #expect(list.page == 1)
-    #expect(list.list.count == 3)
-    for order in list.list {
-        print("\(order.id) email:\(order.email ?? "") sum:\(order.sum ?? 0)")
-    }
+    #expect(list.list.count == 1)
+
+    let order = try #require(list.list.first)
+    #expect(order.orderId == 1365)
+    #expect(order.email == "test@test.com")
+    #expect(order.deliveryAddress?.city == "DDDDD")
+    #expect(order.confirmDate == nil)
+
+    let deliveryDate = try #require(order.deliveryDate)
+    let shippingCost = try #require(order.shippingCost)
+    let pickupPointData = try #require(order.pickupPointData)
+
+    #expect(!String(describing: deliveryDate).isEmpty)
+    #expect(shippingCost >= 0)
+    #expect(!String(describing: pickupPointData).isEmpty)
+
+    print("\(order.id) email:\(order.email ?? "") sum:\(order.sum ?? 0)")
 }
 
 @Test func testFetchOneOrder() async throws {
@@ -199,10 +212,10 @@ import ShoperWebAPI
     #expect(order.orderId == 100)
     #expect(order.userId == 5)
     #expect(order.email == "jan.kowalski@example.pl")
-    #expect(order.paid == true)
+    #expect(order.paid == Decimal(1))
     let sum = try #require(order.sum)
+    #expect(order.deliveryAddress?.city == "Warszawa")
     #expect(sum == Decimal(sign: .plus, exponent: -2, significand: 58000))
-    #expect(order.deliveryCity == "Warszawa")
     print(order)
 }
 
@@ -225,7 +238,7 @@ import ShoperWebAPI
     ])
     #expect(list.count == 2)
     for order in list.list {
-        #expect(order.paid == false)
+        #expect(order.paid == 0)
     }
 }
 
@@ -255,14 +268,9 @@ import ShoperWebAPI
         print(" * \(order.id) \(order.date ?? "") \(order.email ?? "")")
     }
     #expect(orders.count == 3)
-}
-
-@Test func testOrdersNullableFields() async throws {
-    let client = try makeClient()
-    let list = try await ShopOrder.list(client: client)
-    let guestOrder = try #require(list.list.first { $0.orderId == 102 })
-    #expect(guestOrder.userId == nil)
-    #expect(guestOrder.statusDate == nil)
+    // Order 102 has null confirm_date; orders 101 and 100 have valid dates.
+    let guestOrder = try #require(orders.first(where: { $0.orderId == 102 }))
     #expect(guestOrder.confirmDate == nil)
-    #expect(guestOrder.deliveryCode == nil)
+    let confirmedOrder = try #require(orders.first(where: { $0.orderId == 101 }))
+    #expect(confirmedOrder.confirmDate == "2023-10-11 09:30:00")
 }

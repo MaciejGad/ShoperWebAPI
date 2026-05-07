@@ -102,4 +102,15 @@ extension KeyedDecodingContainer {
             return nil
         }
     }
+
+    func decodeDateStringIfPresent(forKey key: Key) throws -> String? {
+        guard let value = try decodeIfPresent(String.self, forKey: key) else {
+            return nil
+        }
+        let zeroDatePlaceholders: Set<String> = ["0000-00-00 00:00:00", "0000-00-00"]
+        if zeroDatePlaceholders.contains(value) {
+            return nil
+        }
+        return value
+    }
 }
