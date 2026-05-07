@@ -189,6 +189,74 @@ let createPayload = CreateProductImage.image(
 let imageId = try await ProductImage.create(client: client, payload: createPayload)
 ```
 
+## Working with Orders
+
+Orders represent customer purchases. Use `ShopOrder` (the name avoids a conflict with the SDK's internal `Order<Key>` sort-direction type).
+
+### Fetching Orders
+
+```swift
+// Get all orders
+let list = try await ShopOrder.list(client: client)
+print("Total orders: \(list.count)")
+
+// Get a specific order
+let order = try await ShopOrder.get(client: client, id: 100)
+print("Order \(order.orderId ?? 0): \(order.email ?? "") sum: \(order.sum ?? 0)")
+```
+
+### Filtering Orders
+
+```swift
+// Unpaid orders
+let unpaid = try await ShopOrder.list(client: client, filters: [
+    .paid(false)
+])
+
+// Orders with a specific status
+let confirmed = try await ShopOrder.list(client: client, filters: [
+    .statusId(2)
+])
+
+// Orders from a specific customer
+let customerOrders = try await ShopOrder.list(client: client, filters: [
+    .userId(5)
+])
+```
+
+### Sorting Orders
+
+```swift
+// Most recent orders first
+let recent = try await ShopOrder.list(client: client, sort: [
+    .date(direction: .descending)
+])
+
+// Highest value orders first
+let byValue = try await ShopOrder.list(client: client, sort: [
+    .sum(direction: .descending)
+])
+```
+
+### Pagination
+
+```swift
+let page2 = try await ShopOrder.list(client: client, page: 2, limit: 10)
+print("Page \(page2.page) of \(page2.pages), total: \(page2.count)")
+```
+
+### Combining Orders with Their Products
+
+```swift
+// Fetch orders, then load line items for each
+let orders = try await ShopOrder.list(client: client, filters: [.paid(false)]).list
+
+for order in orders {
+    guard let orderId = order.orderId else { continue }
+    let items = try await OrderProduct.list(client: client, filters: [.orderId(orderId)])
+    print("Order \(orderId): \(items.count) item(s), total: \(order.sum ?? 0)")
+}
+
 ## Working with Order Products
 
 Order products represent line items within an order. Use this resource to fetch which products were purchased and in what quantities.

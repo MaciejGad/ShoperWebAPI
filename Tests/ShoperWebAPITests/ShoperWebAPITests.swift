@@ -180,3 +180,89 @@ import ShoperWebAPI
         print(" * \(item.name ?? "") price:\(item.price ?? 0)")
     }
 }
+
+
+@Test func testFetchOrders() async throws {
+    let client = try makeClient()
+    let list = try await ShopOrder.list(client: client)
+    #expect(list.count == 3)
+    #expect(list.page == 1)
+    #expect(list.list.count == 3)
+    for order in list.list {
+        print("\(order.id) email:\(order.email ?? "") sum:\(order.sum ?? 0)")
+    }
+}
+
+@Test func testFetchOneOrder() async throws {
+    let client = try makeClient()
+    let order = try await ShopOrder.get(client: client, id: 100)
+    #expect(order.orderId == 100)
+    #expect(order.userId == 5)
+    #expect(order.email == "jan.kowalski@example.pl")
+    #expect(order.paid == true)
+    let sum = try #require(order.sum)
+    #expect(sum == Decimal(sign: .plus, exponent: -2, significand: 58000))
+    #expect(order.deliveryCity == "Warszawa")
+    print(order)
+}
+
+@Test func testFetchOrdersByStatusId() async throws {
+    let client = try makeClient()
+    let list = try await ShopOrder.list(client: client, filters: [
+        .statusId(2)
+    ])
+    #expect(list.count == 1)
+    let items = list.list
+    #expect(items.count == 1)
+    let statusId = try #require(items.first?.statusId)
+    #expect(statusId == 2)
+}
+
+@Test func testFetchUnpaidOrders() async throws {
+    let client = try makeClient()
+    let list = try await ShopOrder.list(client: client, filters: [
+        .paid(false)
+    ])
+    #expect(list.count == 2)
+    for order in list.list {
+        #expect(order.paid == false)
+    }
+}
+
+@Test func testOrdersPageTwo() async throws {
+    let client = try makeClient()
+    let list = try await ShopOrder.list(client: client, page: 2)
+    #expect(list.page == 2)
+    #expect(list.count == 15)
+    #expect(list.pages == 2)
+    #expect(list.list.count == 2)
+}
+
+@Test func testOrdersLimit() async throws {
+    let client = try makeClient()
+    let list = try await ShopOrder.list(client: client, filters: [], sort: [], page: nil, limit: 2)
+    #expect(list.list.count == 2)
+}
+
+@Test func testOrdersSortByDateDesc() async throws {
+    let client = try makeClient()
+    let list = try await ShopOrder.list(client: client, sort: [
+        .date(direction: .descending)
+    ])
+    let orders = list.list
+    print("Orders sorted by date desc:")
+    for order in orders {
+        print(" * \(order.id) \(order.date ?? "") \(order.email ?? "")")
+    }
+    #expect(orders.count == 3)
+}
+
+@Test func testOrdersNullableFields() async throws {
+    let client = try makeClient()
+    let list = try await ShopOrder.list(client: client)
+    let guestOrder = try #require(list.list.first { $0.orderId == 102 })
+    #expect(guestOrder.userId == nil)
+    #expect(guestOrder.statusDate == nil)
+    #expect(guestOrder.confirmDate == nil)
+    #expect(guestOrder.deliveryCode == nil)
+}
