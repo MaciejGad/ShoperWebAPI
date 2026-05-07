@@ -38,7 +38,7 @@ public struct ShopOrder: Codable, Sendable {
     public let additionalFields: [OrderAdditionalField]?
     public let pickupPoint: String?
     public let pickupPointData: PickupPointData?
-    public let shippingAdditionalFields: [String: String]?
+    public let shippingAdditionalFields: [String: String?]?
     public let properties: [String]?
     public let tags: [String]?
     public let orderUrl: String?
@@ -98,7 +98,7 @@ public struct ShopOrder: Codable, Sendable {
         self.additionalFields = try container.decodeIfPresent([OrderAdditionalField].self, forKey: .additionalFields)
         self.pickupPoint = try container.decodeIfPresent(String.self, forKey: .pickupPoint)
         self.pickupPointData = try container.decodeIfPresent(PickupPointData.self, forKey: .pickupPointData)
-        self.shippingAdditionalFields = try container.decodeIfPresent([String: String].self, forKey: .shippingAdditionalFields)
+        self.shippingAdditionalFields = try container.decodeIfPresent([String: String?].self, forKey: .shippingAdditionalFields)
         self.properties = try container.decodeIfPresent([String].self, forKey: .properties)
         self.tags = try container.decodeIfPresent([String].self, forKey: .tags)
         self.orderUrl = try container.decodeIfPresent(String.self, forKey: .orderUrl)

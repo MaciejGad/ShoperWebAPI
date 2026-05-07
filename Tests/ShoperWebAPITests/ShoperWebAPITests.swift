@@ -219,6 +219,17 @@ import ShoperWebAPI
     print(order)
 }
 
+@Test func testFetchOrderWithNullShippingAdditionalField() async throws {
+    // Regression test: shippingAdditionalFields containing null values should decode without crashing
+    let client = try makeClient()
+    let order = try await ShopOrder.get(client: client, id: 100)
+    let fields = try #require(order.shippingAdditionalFields)
+    #expect(fields["street"] == "ul. Kwiatowa 1")
+    #expect(fields.keys.contains("house_number"))   // key present…
+    #expect(fields["house_number"] == .some(nil))    // …but value is null
+    #expect(fields["flat_number"] == "5")
+}
+
 @Test func testFetchOrdersByStatusId() async throws {
     let client = try makeClient()
     let list = try await ShopOrder.list(client: client, filters: [
