@@ -5,6 +5,7 @@ public enum Endpoint: String {
     case products = "webapi/rest/products"
     case images = "webapi/rest/product-images"
     case orderProducts = "webapi/rest/order-products"
+    case orders = "webapi/rest/orders"
     
     func url(config: Config, id: Int?  = nil, filters: String? = nil, sort: SortOrder? = nil, page: Int? = nil, limit: Int? = nil) throws -> URL {
         var url = config.shopURL.appendingPathComponent(rawValue)
