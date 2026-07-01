@@ -70,4 +70,20 @@ extension Resource {
     static public func update(client: ClientProtocol, id: Int, payload: UpdatePayload) async throws {
         _ = try await client.put(endpoint: Self.endpoint, id: id, payload: payload)
     }
+
+    static public func listAll(
+        client: ClientProtocol,
+        filters: [Filter<Key>] = [],
+        sort: [Order<Sort>] = [],
+        limit: Int = 50,
+        maxPages: Int = 200
+    ) async throws -> [Self] {
+        var all: [Self] = []
+        for page in 1...maxPages {
+            let result = try await list(client: client, filters: filters, sort: sort, page: page, limit: limit)
+            all.append(contentsOf: result.list)
+            if result.list.count < limit || page >= result.pages { break }
+        }
+        return all
+    }
 }

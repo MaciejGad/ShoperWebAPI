@@ -34,6 +34,10 @@ public final class Client {
     
     private func fetchAccessToken() async throws {
         guard accessToken == nil else { return }
+        if let token = config.accessToken {
+            accessToken = Auth(accessToken: token)
+            return
+        }
         let url = try Endpoint.auth.url(config: config)
         if config.verbose {
             print("Url: \(url)")
@@ -53,7 +57,7 @@ public final class Client {
         }
         accessToken = try decoder.decode(Auth.self, from: data)
     }
-    
+
     func getAccessToken() async throws -> Auth {
         guard let accessToken = accessToken, accessToken.isValid() else {
             try await fetchAccessToken()

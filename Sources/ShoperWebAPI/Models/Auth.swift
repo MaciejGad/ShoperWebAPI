@@ -12,6 +12,13 @@ struct Auth: Codable {
         expirationDate > currentDate()
     }
     
+    init(accessToken: String) {
+        self.accessToken = accessToken
+        self.expiresIn = .infinity
+        self.tokenType = "Bearer"
+        self.expirationDate = .distantFuture
+    }
+
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         accessToken = try container.decode(String.self, forKey: .accessToken)
