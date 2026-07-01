@@ -76,6 +76,28 @@ import ShoperWebAPI
     #expect(parentMap[26] == 25)
 }
 
+@Test func testShoperCategoryFetchParentMap() async throws {
+    let client = try makeClient()
+    let parentMap = try await ShoperCategory.fetchParentMap(client: client)
+    #expect(parentMap[24] == 16)
+    #expect(parentMap[30] == 21)
+    #expect(parentMap[26] == 25)
+}
+
+@Test func testShoperCategoryListPairedWithParentMap() async throws {
+    let client = try makeClient()
+    let categories = try await ShoperCategory.list(client: client).list
+    let parentMap = try await ShoperCategory.fetchParentMap(client: client)
+
+    // Category 24 ("Sukienki letnie") is a known child of tree node 16 in the fixture data.
+    let sukienki = try #require(categories.first(where: { $0.categoryId == 24 }))
+    #expect(parentMap[sukienki.categoryId] == 16)
+
+    // Category 16 itself is a top-level child of root node 21, so it has a parent too,
+    // even though it isn't present in the /categories page-1 mock.
+    #expect(parentMap[16] == 21)
+}
+
 // MARK: - Config with access token
 
 @Test func testConfigWithAccessToken() async throws {
