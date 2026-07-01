@@ -20,6 +20,28 @@ public struct OrderProduct: Codable, Sendable {
     public let gaugeWeight: Decimal?
     public let unitId: Int?
     public let rebate: Decimal?
+    
+    enum CodingKeys: String, CodingKey {
+        case orderProductId = "id"
+        case orderId
+        case productId
+        case stockId
+        case name
+        case code
+        case quantity
+        case price
+        case priceBrutto
+        case priceBuying
+        case priceTaxValue
+        case taxId
+        case currencyRate
+        case currencyId
+        case currencyName
+        case productType
+        case gaugeWeight
+        case unitId
+        case rebate
+    }
 
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)

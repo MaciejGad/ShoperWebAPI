@@ -1,10 +1,10 @@
 {
   "configurations" : [
     {
-      "id" : "78AB790E-3F14-4D20-81BA-BE5624DC3ED1",
+      "id" : "043D59FE-D555-4CCF-AD2D-2CB9158C6D36",
       "name" : "Test Scheme Action",
       "options" : {
-
+        "testTimeoutsEnabled" : true
       }
     }
   ],
