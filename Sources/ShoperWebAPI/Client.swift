@@ -125,9 +125,13 @@ extension Client: ClientProtocol {
     private func saveToFile(data: Data, method: Method, url: URL) {
         do {
             let fileName = try mockFilename(method: method.rawValue, path: url.path, query: url.query)
-            let fileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-                .appendingPathComponent("mocks")
-                .appendingPathComponent("\(fileName).json")
+            let folderURL: URL
+            if let folderPath = ProcessInfo.processInfo.environment["MOCK_PATH"] {
+                folderURL = URL(fileURLWithPath: folderPath)
+            } else {
+                folderURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("mocks")
+            }
+            let fileURL = folderURL.appendingPathComponent("\(fileName).json")
             try data.write(to: fileURL)
             if config.verbose {
                 print("Saved response to: \(fileURL.path)")

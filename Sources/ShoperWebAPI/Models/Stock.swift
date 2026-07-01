@@ -80,6 +80,7 @@ public struct Stock: Codable, Sendable {
         self.historicalLowestPrice = try container.decodeDecimal(forKey: .historicalLowestPrice)
         self.wholesaleHistoricalLowestPrice = try container.decodeDecimal(forKey: .wholesaleHistoricalLowestPrice)
         self.specialHistoricalLowestPrice = try container.decodeDecimal(forKey: .specialHistoricalLowestPrice)
-        self.additionalCodes = try container.decodeIfPresent(Stock.AdditionalCodes.self, forKey: .additionalCodes)
+        // The API returns [] (empty array) when there are no additional codes instead of null/omitting the field.
+        self.additionalCodes = try? container.decode(Stock.AdditionalCodes.self, forKey: .additionalCodes)
     }
 }

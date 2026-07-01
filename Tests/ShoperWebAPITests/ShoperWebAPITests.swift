@@ -42,7 +42,7 @@ import ShoperWebAPI
 
 @Test func testFetchOneImage() async throws {
     let client = try makeClient()
-    let image = try await ProductImage.get(client: client, id: 183)
+    let image = try await ProductImage.get(client: client, id: 179)
     print(image)
 }
 
@@ -121,10 +121,10 @@ import ShoperWebAPI
 @Test func testFetchOrderProducts() async throws {
     let client = try makeClient()
     let list = try await OrderProduct.list(client: client)
-    #expect(list.count == 3)
+    #expect(list.count == 4)
     #expect(list.page == 1)
     let items = list.list
-    #expect(items.count == 3)
+    #expect(items.count == 4)
     for item in items {
         print("\(item.id) order:\(item.orderId ?? -1) product:\(item.productId ?? -1) \(item.name ?? "") qty:\(item.quantity ?? 0)")
     }

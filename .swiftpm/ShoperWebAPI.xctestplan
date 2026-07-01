@@ -1,0 +1,41 @@
+{
+  "configurations" : [
+    {
+      "id" : "78AB790E-3F14-4D20-81BA-BE5624DC3ED1",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "environmentVariableEntries" : [
+      {
+        "key" : "MOCK_PATH",
+        "value" : "\/Users\/bazyl\/Code\/ShoperWebAPI\/Tests\/ShoperWebAPITests\/Mocks"
+      },
+      {
+        "key" : "SHOPER_PASSWORD",
+        "value" : "byssyh-fuQjiv-pekmo8"
+      },
+      {
+        "key" : "SHOPER_USERNAME",
+        "value" : "test"
+      },
+      {
+        "key" : "SHOPER_DOMAIN",
+        "value" : "sklep173975.shoparena.pl"
+      }
+    ]
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "ShoperWebAPITests",
+        "name" : "ShoperWebAPITests"
+      }
+    }
+  ],
+  "version" : 1
+}
