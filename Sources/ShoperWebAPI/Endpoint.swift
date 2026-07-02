@@ -27,6 +27,7 @@ public enum Endpoint: String {
     case optionGroups = "webapi/rest/option-groups"
     case options = "webapi/rest/options"
     case optionValues = "webapi/rest/option-values"
+    case productFiles = "webapi/rest/product-files"
     
     func url(config: Config, id: Int?  = nil, filters: String? = nil, sort: SortOrder? = nil, page: Int? = nil, limit: Int? = nil) throws -> URL {
         var url = config.shopURL.appendingPathComponent(rawValue)
