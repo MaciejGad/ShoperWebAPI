@@ -23,6 +23,7 @@ public struct CreateProduct: Encodable, Sendable {
 
     public var attributes: [String: String]?
     public var categories: [Int]?
+    public var collections: [Int]?
     public var related: [Int]?
     public var feedsExludes: [Int]?
     public var tagId: Int?
@@ -50,6 +51,7 @@ public struct CreateProduct: Encodable, Sendable {
         isProductOfDay: Bool? = nil,
         attributes: [String: String]? = nil,
         categories: [Int]? = nil,
+        collections: [Int]? = nil,
         related: [Int]? = nil,
         feedsExludes: [Int]? = nil,
         tagId: Int? = nil,
@@ -76,6 +78,7 @@ public struct CreateProduct: Encodable, Sendable {
         self.isProductOfDay = isProductOfDay
         self.attributes = attributes
         self.categories = categories
+        self.collections = collections
         self.related = related
         self.feedsExludes = feedsExludes
         self.tagId = tagId
@@ -88,8 +91,8 @@ public struct CreateProduct: Encodable, Sendable {
     /// mainImage, children, groupId, calculatedAvailabilityId, permalink, ...) are never copied
     /// because the target types don't expose them.
     ///
-    /// Not copied: `collections`, `options`, `tagId`, `tags` — the source `Product` model does not
-    /// currently decode these fields.
+    /// Not copied: `options`, `tagId` — the source `Product` model does not currently decode
+    /// per-product option assignments, and there is no single "tag_id" concept on a read product.
     public init(copying product: Product) {
         self.categoryId = product.categoryId
         self.code = product.code
@@ -111,8 +114,10 @@ public struct CreateProduct: Encodable, Sendable {
         self.isProductOfDay = product.isProductOfDay
         self.attributes = product.attributes.flattenedForProductInsert()
         self.categories = product.categories
+        self.collections = product.collections
         self.related = product.related
         self.feedsExludes = product.feedsExludes
+        self.tags = product.tags
         self.safetyInformation = ProductSafetyInformationPayload(copying: product.safetyInformation)
     }
 }

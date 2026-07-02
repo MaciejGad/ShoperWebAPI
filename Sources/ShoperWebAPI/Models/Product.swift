@@ -47,7 +47,9 @@ public struct Product: Codable, Sendable {
     public let children: ProductChild?
     public let feedsExludes: [Int]?
     public let safetyInformation: SafetyInformation
-    
+    public let collections: [Int]?
+    public let tags: [Int]?
+
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.productId = try container.decodeInt(forKey: .productId)
@@ -96,6 +98,8 @@ public struct Product: Codable, Sendable {
         self.children = try container.decodeIfPresent(ProductChild.self, forKey: .children)
         self.feedsExludes = try container.decodeIfPresent([Int].self, forKey: .feedsExludes)
         self.safetyInformation = try container.decode(SafetyInformation.self, forKey: .safetyInformation)
+        self.collections = try container.decodeIntArrayIfPresent(forKey: .collections)
+        self.tags = try container.decodeIntArrayIfPresent(forKey: .tags)
     }
 }
 
