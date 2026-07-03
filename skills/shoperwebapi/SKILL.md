@@ -168,7 +168,7 @@ language is disabled — the live API returned HTTP 500 for every payload tried)
 `/additional-field-options` ✅ but module not installed on every shop (HTTP 400 "Missing MODULE"
 if disabled) · `ProductSafetyProducer`/`Importer`/`Responsible`/`Certificate`
 `/product-safety-*` ro · `Progress` `/progresses` ro · `MetafieldValue` `/metafield-values` ✅
-(generic key/value storage attached to any object via `metafieldId`)
+(generic key/value storage attached to any object via `metafieldId`) · `Webhook` `/webhooks` ✅
 
 **Metafield binding** (write-only action, no list/get, requires the `metafields_bind` feature
 flag — expect HTTP 403 if disabled):
@@ -177,10 +177,20 @@ let bindId = try await MetafieldBind.create(client: client,
     payload: MetafieldBind(type: "product", itemId: "36", metafieldId: 1, value: "some value"))
 ```
 
+**Webhooks** — `events` takes `WebhookEvent`, a typed enum of the 24 documented events (7 groups:
+category/order/client/product/parcel/specialoffer/subscriber, each with `.create`/`.edit`/`.delete`
+plus a few extras like `.orderPaid`, `.orderStatus`, `.parcelDispatch`, `.parcelSend`). Unknown
+values (e.g. system webhooks from installed apps, like `"admin.account_connected"`) decode as
+`.unknown(String)`.
+```swift
+let webhookId = try await Webhook.create(client: client,
+    payload: CreateWebhook(url: "https://example.com/hook", format: .json, events: [.orderCreate]))
+```
+
 **Not implemented:** CMS/blog, auctions, metafield *definitions* (`/metafields/{object}` — its
 dynamic path segment doesn't fit this SDK's resource pattern; use `MetafieldValue` directly if you
-already know the `metafieldId`), loyalty events, admin dashboard stats, webhooks,
-multi-warehouse support (`warehouses`, `Stock.warehouses`).
+already know the `metafieldId`), loyalty events, admin dashboard stats, multi-warehouse support
+(`warehouses`, `Stock.warehouses`).
 
 ## When something doesn't match the docs
 

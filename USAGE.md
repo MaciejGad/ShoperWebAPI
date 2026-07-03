@@ -373,6 +373,7 @@ let parentMap2 = try await ShoperCategory.fetchParentMap(client: client)
 | `ProductSafetyCertificate` | `/product-safety-certificates` | read-only |
 | `Progress` | `/progresses` | read-only — status of long-running shop operations (bulk imports etc.) |
 | `MetafieldValue` | `/metafield-values` | ✅ — generic key/value storage attached to any shop object via a `metafieldId` |
+| `Webhook` | `/webhooks` | ✅ |
 
 ### Metafield binding (write-only action, no list/get)
 
@@ -385,6 +386,51 @@ let bindId = try await MetafieldBind.create(client: client, payload: MetafieldBi
 Requires the `metafields_bind` feature flag to be enabled on your shop — expect HTTP 403 if it
 isn't. `itemId` is a `String` (not `Int`) because that's what the API schema documents for this
 specific field.
+
+### Webhooks
+
+```swift
+let webhookId = try await Webhook.create(client: client, payload: CreateWebhook(
+    url: "https://example.com/webhook-listener",
+    format: .json,
+    active: true,
+    events: [.orderCreate, .orderPaid]
+))
+try await Webhook.delete(client: client, id: webhookId)
+```
+
+`events` takes `WebhookEvent`, a typed enum covering the 24 documented events:
+
+| Group | Events |
+|---|---|
+| Categories | `.categoryCreate`, `.categoryEdit`, `.categoryDelete` |
+| Orders | `.orderCreate`, `.orderEdit`, `.orderPaid`, `.orderStatus`, `.orderDelete` |
+| Clients | `.clientCreate`, `.clientEdit`, `.clientDelete` |
+| Products | `.productCreate`, `.productEdit`, `.productDelete` |
+| Parcels | `.parcelCreate`, `.parcelDispatch`, `.parcelDelete`, `.parcelSend` |
+| Special Offers | `.specialOfferCreate`, `.specialOfferEdit`, `.specialOfferDelete` |
+| Subscribers | `.subscriberCreate`, `.subscriberEdit`, `.subscriberDelete` |
+
+The API validates `events` server-side — an unrecognized value is rejected with HTTP 400. Real
+stores may also have webhooks (usually created by installed AppStore apps) using event names
+outside this list, e.g. `"admin.account_connected"`, `"order_transaction.create"`,
+`"order_refund.create"` — these decode fine as `.unknown(String)` when reading, but aren't
+documented as generally creatable.
+
+### Verifying incoming webhook deliveries
+
+This is about the *receiving* side (your webhook endpoint), not something this SDK does for you,
+but worth knowing if you're building the app that registers webhooks above:
+
+- Every delivery includes headers: `X-Shop-Domain`, `X-Shop-Version`, `X-Shop-License` (a license
+  checksum, not the raw ID), `X-Webhook-Id`, `X-Webhook-Name` (e.g. `"order.create"`), and
+  `X-Webhook-SHA1` (an HMAC signature of the request body).
+- To verify: derive a shop-aware secret via
+  `HMAC-SHA512(shopHash + ":" + webhookSecret, appstoreSecret)` where `shopHash` is the
+  `X-Shop-License` header value and `webhookSecret` is the secret configured in your AppStore
+  application settings — then use it to validate `X-Webhook-SHA1` with a constant-time comparison.
+- Delivery is fire-and-forget: one attempt, 3-second timeout, no retry on failure. Your endpoint
+  must respond 2xx within that window.
 
 ### Shop metadata (singletons — no list/id, different call shape)
 
@@ -401,7 +447,7 @@ SDK is not implemented, since a bug there could lock your own shop admins out of
 
 CMS/blog (`news*`, `aboutpages`), auctions (`auction-*`), metafield *definitions*
 (`/metafields/{object}` — but `MetafieldValue`/`MetafieldBind` above **are** implemented), loyalty
-events, admin dashboard stats, webhooks, and multi-warehouse support (`warehouses`,
+events, admin dashboard stats, and multi-warehouse support (`warehouses`,
 `Stock.warehouses`) are not implemented. If you need one of these, it's usually straightforward
 to add — see `AGENTS.md` for the pattern, or open an issue.
 

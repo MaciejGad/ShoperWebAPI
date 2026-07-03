@@ -149,6 +149,12 @@ extension XType: Codable {
 }
 ```
 
+The same pattern applies to **string**-coded fields with a documented value set, not just int-coded
+ones — `.unknown(String)` instead of `.unknown(Int)`, no int-or-string decoding fallback needed
+since the wire value is already a string. See `WebhookEvent.swift` (24 documented event names,
+`.unknown(String)` for anything else — real stores have webhooks with event names outside the
+documented list, e.g. app-installed system webhooks).
+
 ### Bitmasks
 
 When a field is a documented bitmask (e.g. `AdditionalField.locate`), model it as an `OptionSet`
@@ -318,6 +324,8 @@ code to match the OpenAPI doc — the doc is wrong, the code already matches rea
 | `OrderTransaction` id field | Undocumented — spec's property list omits an id despite `/order-transactions/{id}` existing | Modeled as `transactionId` on a best-effort basis; unconfirmed live (403-gated) |
 | `MetafieldBind.item_id` | Documents `type: string, pattern: ^[0-9]+$` — unlike almost every other numeric id in this API's `*Insert` schemas, which use `type: integer` | Untested live (`metafields_bind` feature flag disabled on the store tested against, HTTP 403). Modeled as `String` to match the schema literally rather than guessing it also accepts a JSON integer. |
 | `metafield-bind` | Normal-looking action endpoint | Requires the `metafields_bind` feature flag; returns HTTP 403 without it (confirmed live) |
+| `Webhook.events` | Main API spec (`api-1.yaml`): just an array of strings, no allowed values documented | Validated server-side against a fixed whitelist of 24 events across 7 groups, documented in a **separate** dedicated OpenAPI file ("Shoper Webhooks", not the main spec — it's a pure `info.description` doc with no `paths`/`components`, not a functional schema). See `WebhookEvent.swift` for the full enumerated list. `"order.created"` was rejected live (HTTP 400); `"order.create"` — the documented, correct name — was accepted. |
+| `Webhook` create example in the "Shoper Webhooks" doc | Shows `"event": "..."` (singular string) and a `"translations": {"pl_PL": {"name": "..."}}` field | **Not what the live API accepts.** Live-verified: `POST /webhooks` wants `"events": [...]` (plural array, matching the main spec's `Webhook`/`WebhookInsert` schema) and has no `translations` field at all — the response for a created webhook never includes one. Treat that doc's JSON example as illustrative/aspirational, not authoritative; `CreateWebhook`/`Webhook` in this SDK match the live-verified shape (main spec), not the doc example. |
 
 When you find a new mismatch like this, add a row here — this table is the single most valuable
 artifact for anyone continuing this work, since re-discovering these by trial and error is slow
@@ -334,9 +342,8 @@ or deferred:
   `Stock.warehouses` mapping) — excluded per explicit instruction; the target shops don't use
   multi-warehouse.
 - **CMS/content** (`news*`, `aboutpages`), **auctions** (`auction-*`), **loyalty**
-  (`loyalty-events`), **admin dashboard** (`dashboard-*`), **webhooks** — not yet implemented;
-  out of scope for product management but straightforward to add following the pattern above if
-  needed.
+  (`loyalty-events`), **admin dashboard** (`dashboard-*`) — not yet implemented; out of scope for
+  product management but straightforward to add following the pattern above if needed.
 - **`Metafield`** (`/metafields/{object}`, the metafield *definitions* endpoint) — not
   implemented; its dynamic string path segment doesn't fit the current `Endpoint`/`Resource`
   pattern. See "Resources that don't fit the pattern: dynamic path segments" above.
