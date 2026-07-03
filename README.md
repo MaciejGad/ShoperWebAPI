@@ -122,7 +122,7 @@ let sortedProducts = try await Product.list(client: client, sort: [
 
 ```swift
 let updatePayload = UpdateProduct(
-    stock: UpdateStock(stock: 100)
+    stock: CreateProductStock(stock: 100)
 )
 
 try await Product.update(client: client, id: 36, payload: updatePayload)
@@ -133,7 +133,7 @@ try await Product.update(client: client, id: 36, payload: updatePayload)
 ```swift
 let updatePayload = UpdateProduct(
     translations: [
-        "pl_PL": UpdateProductTranslation(
+        "pl_PL": CreateProductTranslation(
             name: "New Product Name",
             shortDescription: "Updated short description",
             description: "Updated full description"
@@ -143,6 +143,10 @@ let updatePayload = UpdateProduct(
 
 try await Product.update(client: client, id: 36, payload: updatePayload)
 ```
+
+> `UpdateProduct` reuses `CreateProductStock`/`CreateProductTranslation` for its nested
+> `stock`/`translations` fields — there's no separate `UpdateStock`/`UpdateProductTranslation`
+> type. See [`USAGE.md`](USAGE.md) for why.
 
 ## Working with Product Images
 
@@ -155,7 +159,7 @@ let imageList = try await ProductImage.list(client: client, filters: [
 ])
 
 for image in imageList.list {
-    print("Image ID: \(image.id), URL: \(image.url ?? "No URL")")
+    print("Image: \(image.name), main: \(image.main), hidden: \(image.hidden)")
 }
 ```
 
@@ -386,27 +390,31 @@ All resources follow the same pattern with these operations:
 - `list(client:, filters:)` - Get filtered resources
 - `list(client:, sort:)` - Get sorted resources
 - `list(client:, filters:, sort:, page:)` - Get resources with all options
+- `listAll(client:, filters:, sort:, limit:, maxPages:)` - Walk every page and return a flat array
 - `get(client:, id:)` - Get a specific resource by ID
-- `create(client:, payload:)` - Create a new resource
-- `update(client:, id:, payload:)` - Update an existing resource
+- `create(client:, payload:)` - Create a new resource, returns the new `Int` id
+- `update(client:, id:, payload:)` - Partially update an existing resource
+- `delete(client:, id:)` - Delete a resource, returns `true` if something was deleted
 
 ## Supported Resources
 
-Currently supported resources:
+This SDK covers ~50 Shoper resources, including products, product images/files/stocks,
+categories, attributes/options, orders and order line items, customers (users, addresses,
+groups, tags), subscribers, promotion codes, shipping/payment/geolocation dictionaries, shop
+configuration, and more.
 
-- **Products** (`Product`) - Complete product management
-- **Product Images** (`ProductImage`) - Product image management
-- **Order Products** (`OrderProduct`) - Read order line items (products within orders)
-
-More resources will be added in future versions.
+**For the full catalog with endpoint paths and read/write status, see [`USAGE.md`](USAGE.md).**
+That file also has task-oriented recipes (creating a product, cloning a product, uploading
+images, working with orders) beyond the quick start below.
 
 ## Configuration Options
 
 ```swift
 let config = Config(
     shopURL: URL(string: "https://your-shop.myshoper.pl")!,
-    login: "your-api-login",
-    password: "your-api-password",
+    login: "your-api-login",       // omit if using accessToken
+    password: "your-api-password", // omit if using accessToken
+    accessToken: nil,          // Default: nil - supply an existing OAuth token instead of login/password
     defaultLanguage: "pl_PL",  // Default: "pl_PL"
     verbose: false,            // Default: false - enables request logging
     storeToFile: false         // Default: false - for testing/debugging
@@ -499,6 +507,22 @@ Use serial execution (`--no-parallel`) when:
 - **Race conditions**: When parallel execution causes intermittent failures
 
 By default, Swift Testing runs tests in parallel for faster execution, but serial execution provides more predictable behavior for debugging and development.
+
+## Documentation
+
+- **[`USAGE.md`](USAGE.md)** — the complete usage reference: full resource catalog, recipes for
+  common tasks (create/clone a product, upload images, work with orders), and notes on quirks
+  you may run into.
+- **[`AGENTS.md`](AGENTS.md)** — for contributors extending the SDK: architecture, conventions
+  for adding a new resource, the live-testing workflow, and a table of confirmed mismatches
+  between the Shoper OpenAPI spec and the real API.
+
+### Using an AI coding assistant
+
+If you're adding this package to a project and use Claude Code, `.claude/skills/shoperwebapi/SKILL.md`
+in this repo is a self-contained reference for the SDK's patterns and resource catalog. Copy it
+into your own project's `.claude/skills/shoperwebapi/` directory to have Claude Code use it
+automatically when writing code against this package.
 
 ## Contributing
 
