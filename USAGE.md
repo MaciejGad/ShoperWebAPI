@@ -372,6 +372,19 @@ let parentMap2 = try await ShoperCategory.fetchParentMap(client: client)
 | `ProductSafetyResponsible` | `/product-safety-responsibles` | read-only |
 | `ProductSafetyCertificate` | `/product-safety-certificates` | read-only |
 | `Progress` | `/progresses` | read-only — status of long-running shop operations (bulk imports etc.) |
+| `MetafieldValue` | `/metafield-values` | ✅ — generic key/value storage attached to any shop object via a `metafieldId` |
+
+### Metafield binding (write-only action, no list/get)
+
+```swift
+let bindId = try await MetafieldBind.create(client: client, payload: MetafieldBind(
+    type: "product", itemId: "36", metafieldId: 1, value: "some value"
+))
+```
+
+Requires the `metafields_bind` feature flag to be enabled on your shop — expect HTTP 403 if it
+isn't. `itemId` is a `String` (not `Int`) because that's what the API schema documents for this
+specific field.
 
 ### Shop metadata (singletons — no list/id, different call shape)
 
@@ -386,10 +399,11 @@ SDK is not implemented, since a bug there could lock your own shop admins out of
 
 ## What's not in this SDK
 
-CMS/blog (`news*`, `aboutpages`), auctions (`auction-*`), metafields, loyalty events, admin
-dashboard stats, webhooks, and multi-warehouse support (`warehouses`, `Stock.warehouses`) are not
-implemented. If you need one of these, it's usually straightforward to add — see `AGENTS.md` for
-the pattern, or open an issue.
+CMS/blog (`news*`, `aboutpages`), auctions (`auction-*`), metafield *definitions*
+(`/metafields/{object}` — but `MetafieldValue`/`MetafieldBind` above **are** implemented), loyalty
+events, admin dashboard stats, webhooks, and multi-warehouse support (`warehouses`,
+`Stock.warehouses`) are not implemented. If you need one of these, it's usually straightforward
+to add — see `AGENTS.md` for the pattern, or open an issue.
 
 ## More examples
 

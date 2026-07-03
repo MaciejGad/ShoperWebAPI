@@ -68,6 +68,29 @@ wasn't needed for the use case this SDK was built for (see "Scope" below). For t
 
 If a resource later needs real filtering, swap `EmptyFilterKey`/`EmptySortKey` for a dedicated type — don't retrofit filtering into `EmptyFilterKey` itself, it's meant to stay generic.
 
+### Write-only action endpoints
+
+A few endpoints are pure actions with no list/get — `POST /metafield-bind` is the example so far.
+Pattern: a plain `Encodable` struct (the request body) with a static `create(client:payload:)` that
+calls `client.post(endpoint:payload:)` directly and decodes the raw `Int` id, mirroring
+`Resource.create`'s behavior without the rest of the protocol. See `MetafieldBind.swift`.
+
+### Resources that don't fit the pattern: dynamic path segments
+
+`Endpoint` is a `String`-backed enum; `Endpoint.url(...)` builds `<rawValue>/<id>` where `id` is
+an optional `Int`. Some Shoper endpoints put a dynamic **string** segment in the path before any
+numeric id — e.g. `GET /metafields/{object}` where `{object}` is `"product"`, `"category"`, etc.
+This doesn't fit `Endpoint`/`Resource`/`ClientProtocol` as they exist today, and extending
+`ClientProtocol` to support it would change a signature every conformer (`Client`, plus any
+hand-written fakes in tests like `FakeDeleteClient`) depends on.
+
+Current decision: **skip modeling these** rather than hack around it. `Metafield` (the
+`/metafields/{object}` definitions endpoint) is not implemented; only `MetafieldValue`
+(`/metafield-values`, a normal `{id}`-based resource) is. If a real need for the object-scoped
+endpoint comes up, the clean fix is adding a new `ClientProtocol` method with a default
+implementation in a protocol extension (so existing conformers don't break), not modifying the
+existing `get`/`post`/`put`/`delete` signatures.
+
 ### Decoding conventions
 
 The global `JSONDecoder` (in `Client.swift`) uses `.convertFromSnakeCase`. This means:
@@ -293,6 +316,8 @@ code to match the OpenAPI doc — the doc is wrong, the code already matches rea
 | `POST /languages` | Should create a language | Consistently returns HTTP 500 on the store this was tested against, with both minimal and full payloads. **`Language.CreatePayload` is `EmptyPayload`** — creation is deliberately disabled in the SDK, not just untested. |
 | `additional-field-options` | Normal-looking endpoint | Returns HTTP 400 "Missing MODULE" — module not installed on the store tested against. Model exists, but list/create are unverified. |
 | `OrderTransaction` id field | Undocumented — spec's property list omits an id despite `/order-transactions/{id}` existing | Modeled as `transactionId` on a best-effort basis; unconfirmed live (403-gated) |
+| `MetafieldBind.item_id` | Documents `type: string, pattern: ^[0-9]+$` — unlike almost every other numeric id in this API's `*Insert` schemas, which use `type: integer` | Untested live (`metafields_bind` feature flag disabled on the store tested against, HTTP 403). Modeled as `String` to match the schema literally rather than guessing it also accepts a JSON integer. |
+| `metafield-bind` | Normal-looking action endpoint | Requires the `metafields_bind` feature flag; returns HTTP 403 without it (confirmed live) |
 
 When you find a new mismatch like this, add a row here — this table is the single most valuable
 artifact for anyone continuing this work, since re-discovering these by trial and error is slow
@@ -308,10 +333,14 @@ or deferred:
 - **Multi-warehouse support** (`warehouses`, `warehouse-logs`, `warehouse-relocations`,
   `Stock.warehouses` mapping) — excluded per explicit instruction; the target shops don't use
   multi-warehouse.
-- **CMS/content** (`news*`, `aboutpages`), **auctions** (`auction-*`), **metafields**
-  (`metafield-*`), **loyalty** (`loyalty-events`), **admin dashboard** (`dashboard-*`),
-  **webhooks** — not yet implemented; out of scope for product management but straightforward to
-  add following the pattern above if needed.
+- **CMS/content** (`news*`, `aboutpages`), **auctions** (`auction-*`), **loyalty**
+  (`loyalty-events`), **admin dashboard** (`dashboard-*`), **webhooks** — not yet implemented;
+  out of scope for product management but straightforward to add following the pattern above if
+  needed.
+- **`Metafield`** (`/metafields/{object}`, the metafield *definitions* endpoint) — not
+  implemented; its dynamic string path segment doesn't fit the current `Endpoint`/`Resource`
+  pattern. See "Resources that don't fit the pattern: dynamic path segments" above.
+  `MetafieldValue` (`/metafield-values`) *is* implemented — it's a normal `{id}`-based resource.
 - **Nested sub-resources with their own CRUD** — `collections/{id}/products`,
   `payments/{payment_id}/channels` — deliberately not modeled as simple resources; they need
   bespoke handling beyond the standard `Resource` pattern.

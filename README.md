@@ -519,10 +519,10 @@ By default, Swift Testing runs tests in parallel for faster execution, but seria
 
 ### Using an AI coding assistant
 
-If you're adding this package to a project and use Claude Code, `.claude/skills/shoperwebapi/SKILL.md`
+If you're adding this package to a project and use Claude Code, [`skills/shoperwebapi/SKILL.md`](skills/shoperwebapi/SKILL.md)
 in this repo is a self-contained reference for the SDK's patterns and resource catalog. Copy it
-into your own project's `.claude/skills/shoperwebapi/` directory to have Claude Code use it
-automatically when writing code against this package.
+into your own project's `.claude/skills/shoperwebapi/` directory (or your global `~/.claude/skills/`)
+to have Claude Code use it automatically when writing code against this package.
 
 ## Contributing
 
