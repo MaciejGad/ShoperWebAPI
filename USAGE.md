@@ -340,6 +340,7 @@ let parentMap2 = try await ShoperCategory.fetchParentMap(client: client)
 | Type | Endpoint | Write? |
 |---|---|---|
 | `PromotionCode` | `/promotion-codes` | ✅ |
+| `LoyaltyEvent` | `/loyalty-events` | create only — no update/delete endpoint exists in the API. Creating fails with HTTP 400 if the shop's loyalty program isn't enabled (`ApplicationConfig.loyaltyEnable`). |
 
 ### Shipping, payment & geography
 
@@ -443,11 +444,24 @@ let lock = try await ApplicationLock.get(client: client)         // is the admin
 `ApplicationLock` intentionally only supports reading lock status — engaging the lock via this
 SDK is not implemented, since a bug there could lock your own shop admins out of the panel.
 
+### Loyalty events
+
+```swift
+let eventId = try await LoyaltyEvent.create(client: client, payload: CreateLoyaltyEvent(
+    userId: 5, score: 100, note: "Welcome bonus"
+))
+let events = try await LoyaltyEvent.list(client: client, filters: [], sort: [], page: nil, limit: 50)
+```
+
+Only `create`/`get`/`list` exist — there's no update or delete endpoint for loyalty events.
+Creating one fails with HTTP 400 ("Program lojalnościowy jest wyłączony") if the shop's loyalty
+program isn't enabled; check `ApplicationConfig.loyaltyEnable` first if you're not sure.
+
 ## What's not in this SDK
 
 CMS/blog (`news*`, `aboutpages`), auctions (`auction-*`), metafield *definitions*
-(`/metafields/{object}` — but `MetafieldValue`/`MetafieldBind` above **are** implemented), loyalty
-events, admin dashboard stats, and multi-warehouse support (`warehouses`,
+(`/metafields/{object}` — but `MetafieldValue`/`MetafieldBind` above **are** implemented), admin
+dashboard stats, and multi-warehouse support (`warehouses`,
 `Stock.warehouses`) are not implemented. If you need one of these, it's usually straightforward
 to add — see `AGENTS.md` for the pattern, or open an issue.
 

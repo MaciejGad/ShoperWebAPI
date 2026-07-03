@@ -154,7 +154,9 @@ SDK's internal sort-direction type) · `OrderProduct` `/order-products` ✅ · `
 `/user-groups` ✅ · `UserTag` `/user-tags` ✅ · `Subscriber` `/subscribers` ✅ · `SubscriberGroup`
 `/subscriber-groups` ✅
 
-**Marketing:** `PromotionCode` `/promotion-codes` ✅
+**Marketing:** `PromotionCode` `/promotion-codes` ✅ · `LoyaltyEvent` `/loyalty-events` create-only
+(no update/delete endpoint exists; creating requires the shop's loyalty program to be enabled —
+HTTP 400 otherwise)
 
 **Shipping/payment/geo:** `Shipping` `/shippings` ro · `Payment` `/payments` ro · `Zone` `/zones`
 ro · `Delivery` `/deliveries` ro · `Availability` `/availabilities` ro · `GeolocationCountry`
@@ -189,7 +191,7 @@ let webhookId = try await Webhook.create(client: client,
 
 **Not implemented:** CMS/blog, auctions, metafield *definitions* (`/metafields/{object}` — its
 dynamic path segment doesn't fit this SDK's resource pattern; use `MetafieldValue` directly if you
-already know the `metafieldId`), loyalty events, admin dashboard stats, multi-warehouse support
+already know the `metafieldId`), admin dashboard stats, multi-warehouse support
 (`warehouses`, `Stock.warehouses`).
 
 ## When something doesn't match the docs
