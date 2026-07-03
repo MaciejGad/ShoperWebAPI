@@ -38,6 +38,7 @@ public enum Endpoint: String {
     case parcels = "webapi/rest/parcels"
     case orderRefunds = "webapi/rest/order-refunds"
     case orderTransactions = "webapi/rest/order-transactions"
+    case redirects = "webapi/rest/redirects"
     
     func url(config: Config, id: Int?  = nil, filters: String? = nil, sort: SortOrder? = nil, page: Int? = nil, limit: Int? = nil) throws -> URL {
         var url = config.shopURL.appendingPathComponent(rawValue)
