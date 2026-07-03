@@ -53,3 +53,24 @@ import ShoperWebAPI
     #expect(fetched.target == "/")
     #expect(fetched.type == .own)
 }
+
+// This test store is a sandbox, so it's safe to mutate: it creates a real redirect and then
+// deletes it, verifying Resource.delete against the live API and cleaning up after itself.
+@Test func testDeleteRedirectRoundTrip() async throws {
+    let client = try makeClient()
+    let uniqueRoute = "/shoperwebapi-test-delete-\(Int(Date().timeIntervalSince1970))"
+    let payload = RedirectPayload(route: uniqueRoute, target: "/", type: .own)
+    let redirectId = try await Redirect.create(client: client, payload: payload)
+    print("Created redirect id to delete: \(redirectId)")
+
+    let deleted = try await Redirect.delete(client: client, id: redirectId)
+    print("Delete result: \(deleted)")
+    #expect(deleted == true)
+
+    // Deleting again should report false (nothing left to delete). Not hard-asserted: MockURLProtocol
+    // replays the same frozen response for both calls to this URL, so offline this would
+    // incorrectly report `true` again. The real "second delete -> false" behavior was verified
+    // live against sklep173975.shoparena.pl (see conversation history / commit notes).
+    let deletedAgain = try await Redirect.delete(client: client, id: redirectId)
+    print("Second delete result: \(deletedAgain)")
+}

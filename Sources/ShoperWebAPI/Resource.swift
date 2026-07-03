@@ -20,6 +20,7 @@ public protocol Resource: Decodable, Sendable {
     static func get(client: ClientProtocol, id: Int) async throws -> Self
     static func create(client: ClientProtocol, payload: CreatePayload) async throws -> Int
     static func update(client: ClientProtocol, id: Int, payload: UpdatePayload) async throws
+    static func delete(client: ClientProtocol, id: Int) async throws -> Bool
 }
 
 extension Resource {
@@ -69,6 +70,24 @@ extension Resource {
     
     static public func update(client: ClientProtocol, id: Int, payload: UpdatePayload) async throws {
         _ = try await client.put(endpoint: Self.endpoint, id: id, payload: payload)
+    }
+
+    /// Deletes the resource. Returns `true` if a resource was deleted, `false` if nothing
+    /// matched `id`.
+    ///
+    /// Note: the OpenAPI spec documents the response as a raw `1`/`0` body for "deleted" vs.
+    /// "nothing to delete", but the live API actually returns HTTP 404 when `id` doesn't exist
+    /// (confirmed by deleting the same resource twice) rather than a `0` body. Both outcomes are
+    /// treated as `false` here so the method's contract holds regardless of which behavior the
+    /// server exhibits for a given resource type.
+    static public func delete(client: ClientProtocol, id: Int) async throws -> Bool {
+        do {
+            let data = try await client.delete(endpoint: Self.endpoint, id: id)
+            let result: Int = try client.decode(data: data)
+            return result == 1
+        } catch let ShoperError.invalidResponse(_, response) where (response as? HTTPURLResponse)?.statusCode == 404 {
+            return false
+        }
     }
 
     static public func listAll(

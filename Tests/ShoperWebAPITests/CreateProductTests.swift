@@ -123,6 +123,42 @@ private func encodeToJSON(_ value: some Encodable) throws -> [String: Any] {
     }
 }
 
+// MARK: - UpdateProduct mirrors CreateProduct's field set (all optional)
+
+@Test func testUpdateProductEncodesOnlySetFields() throws {
+    let payload = UpdateProduct(
+        code: "NEW-CODE",
+        stock: CreateProductStock(price: 50, stock: 3),
+        translations: ["pl_PL": CreateProductTranslation(name: "Updated name")],
+        collections: [2, 3],
+        tags: [10]
+    )
+    let json = try encodeToJSON(payload)
+
+    #expect(json["code"] as? String == "NEW-CODE")
+    #expect(json["stock"] != nil)
+    #expect(json["translations"] != nil)
+    #expect(json["collections"] as? [Int] == [2, 3])
+    #expect(json["tags"] as? [Int] == [10])
+
+    // Everything not explicitly set should be omitted, matching partial-update semantics.
+    #expect(json["category_id"] == nil)
+    #expect(json["pkwiu"] == nil)
+    #expect(json["tax_id"] == nil)
+    #expect(json["safety_information"] == nil)
+}
+
+@Test func testUpdateProductStockOmitsReadOnlyFields() throws {
+    // UpdateProduct.stock reuses CreateProductStock, so it inherits the same read-only exclusions
+    // as product creation (active/code/default/ean/extended/weight_type aren't writable here).
+    let payload = UpdateProduct(stock: CreateProductStock(price: 10, stock: 1))
+    let json = try encodeToJSON(payload)
+    let stock = try #require(json["stock"] as? [String: Any])
+    #expect(stock["active"] == nil)
+    #expect(stock["code"] == nil)
+    #expect(stock["weight_type"] == nil)
+}
+
 // MARK: - Product.create decodes a raw numeric response
 
 @Test func testProductCreateDecodesPlainNumberResponse() async throws {
