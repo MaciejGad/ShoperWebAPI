@@ -55,6 +55,8 @@ public enum Endpoint: String {
     case progresses = "webapi/rest/progresses"
     case additionalFields = "webapi/rest/additional-fields"
     case additionalFieldOptions = "webapi/rest/additional-field-options"
+    case metafieldValues = "webapi/rest/metafield-values"
+    case metafieldBind = "webapi/rest/metafield-bind"
     
     func url(config: Config, id: Int?  = nil, filters: String? = nil, sort: SortOrder? = nil, page: Int? = nil, limit: Int? = nil) throws -> URL {
         var url = config.shopURL.appendingPathComponent(rawValue)
