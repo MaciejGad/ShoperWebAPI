@@ -35,3 +35,37 @@ import ShoperWebAPI
     #expect(json["content"] as? String == content.base64EncodedString())
     #expect(json["description"] as? String == "Test upload")
 }
+
+// This test store is a sandbox, so it's safe to mutate: it uploads a real file to verify the
+// full create -> get round trip against the live API.
+@Test func testCreateProductFileRoundTrip() async throws {
+    let client = try makeClient()
+    // file_name must be unique within the shop, so include a timestamp to allow re-running.
+    let uniqueName = "shoperwebapi-test-file-\(Int(Date().timeIntervalSince1970)).txt"
+    let content = Data("hello from ShoperWebAPI test suite".utf8)
+    let payload = CreateProductFile.file(
+        content: content,
+        translationId: 36,
+        fileName: uniqueName,
+        description: "Uploaded by ShoperWebAPI P5b round-trip test",
+        active: true,
+        type: 0
+    )
+    let fileId = try await ProductFile.create(client: client, payload: payload)
+    print("Created file id: \(fileId)")
+    #expect(fileId > 0)
+
+    let fetched = try await ProductFile.get(client: client, id: fileId)
+    print(fetched)
+    #expect(fetched.fileId == fileId)
+    #expect(fetched.translationId == 36)
+    // The API stores the given filename in `name`; `fileName` is a server-generated unique name.
+    // Match by prefix/suffix rather than exact equality: when re-run offline against a frozen
+    // mock, `uniqueName` (built from the current timestamp) won't equal the value baked into the
+    // mock from whichever run originally recorded it.
+    #expect(fetched.name?.hasPrefix("shoperwebapi-test-file-") == true)
+    #expect(fetched.name?.hasSuffix(".txt") == true)
+    #expect(!fetched.fileName.isEmpty)
+    #expect(fetched.description == "Uploaded by ShoperWebAPI P5b round-trip test")
+    #expect(fetched.addDate != nil)
+}

@@ -3,7 +3,10 @@ import Foundation
 public struct ProductFile: Decodable, Sendable {
     public let fileId: Int
     public let translationId: Int
+    /// Server-generated unique filename (e.g. a hash). NOT the name given at upload time —
+    /// that's `name`, despite what the OpenAPI description for `file_name` suggests.
     public let fileName: String
+    /// The original filename given at upload time.
     public let name: String?
     public let description: String?
     public let active: Bool?
@@ -28,7 +31,8 @@ public struct ProductFile: Decodable, Sendable {
     }
 
     // CodingKeys must match AFTER convertFromSnakeCase conversion (i.e., camelCase).
-    enum CodingKeys: CodingKey {
+    // The real API returns "date_add", not "add_date" as documented in the OpenAPI spec.
+    enum CodingKeys: String, CodingKey {
         case fileId
         case translationId
         case fileName
@@ -38,7 +42,7 @@ public struct ProductFile: Decodable, Sendable {
         case type
         case fileSize
         case order
-        case addDate
+        case addDate = "dateAdd"
     }
 }
 
