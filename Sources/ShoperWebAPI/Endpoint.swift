@@ -53,6 +53,8 @@ public enum Endpoint: String {
     case applicationLock = "webapi/rest/application-lock"
     case applicationVersion = "webapi/rest/application-version"
     case progresses = "webapi/rest/progresses"
+    case additionalFields = "webapi/rest/additional-fields"
+    case additionalFieldOptions = "webapi/rest/additional-field-options"
     
     func url(config: Config, id: Int?  = nil, filters: String? = nil, sort: SortOrder? = nil, page: Int? = nil, limit: Int? = nil) throws -> URL {
         var url = config.shopURL.appendingPathComponent(rawValue)
