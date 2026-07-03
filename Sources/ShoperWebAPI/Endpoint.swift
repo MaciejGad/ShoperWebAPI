@@ -45,6 +45,10 @@ public enum Endpoint: String {
     case userTags = "webapi/rest/user-tags"
     case subscribers = "webapi/rest/subscribers"
     case subscriberGroups = "webapi/rest/subscriber-groups"
+    case geolocationCountries = "webapi/rest/geolocation-countries"
+    case geolocationRegions = "webapi/rest/geolocation-regions"
+    case geolocationSubregions = "webapi/rest/geolocation-subregions"
+    case languages = "webapi/rest/languages"
     
     func url(config: Config, id: Int?  = nil, filters: String? = nil, sort: SortOrder? = nil, page: Int? = nil, limit: Int? = nil) throws -> URL {
         var url = config.shopURL.appendingPathComponent(rawValue)
