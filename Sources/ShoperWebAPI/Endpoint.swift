@@ -49,6 +49,10 @@ public enum Endpoint: String {
     case geolocationRegions = "webapi/rest/geolocation-regions"
     case geolocationSubregions = "webapi/rest/geolocation-subregions"
     case languages = "webapi/rest/languages"
+    case applicationConfig = "webapi/rest/application-config"
+    case applicationLock = "webapi/rest/application-lock"
+    case applicationVersion = "webapi/rest/application-version"
+    case progresses = "webapi/rest/progresses"
     
     func url(config: Config, id: Int?  = nil, filters: String? = nil, sort: SortOrder? = nil, page: Int? = nil, limit: Int? = nil) throws -> URL {
         var url = config.shopURL.appendingPathComponent(rawValue)
