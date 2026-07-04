@@ -1,4 +1,7 @@
 import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 public protocol Resource: Decodable, Sendable {
     associatedtype Key: FilterKey
@@ -85,8 +88,18 @@ extension Resource {
             let data = try await client.delete(endpoint: Self.endpoint, id: id)
             let result: Int = try client.decode(data: data)
             return result == 1
-        } catch let ShoperError.invalidResponse(_, response) where (response as? HTTPURLResponse)?.statusCode == 404 {
-            return false
+        } catch let error as ShoperError {
+            // A cast-in-`where`-clause here (`catch let ... where (x as? HTTPURLResponse)...`)
+            // fails to compile on Linux's swift-corelibs-foundation (Swift 6.0/Ubuntu jammy):
+            // the compiler treats the conditional cast as always succeeding but then can't see
+            // `.statusCode` on the result. Using a plain `if case`/`if let` inside the catch body
+            // avoids the issue and works identically on both platforms.
+            if case .invalidResponse(_, let response) = error,
+               let httpResponse = response as? HTTPURLResponse,
+               httpResponse.statusCode == 404 {
+                return false
+            }
+            throw error
         }
     }
 
