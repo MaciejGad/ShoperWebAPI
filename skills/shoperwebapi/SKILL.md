@@ -150,7 +150,7 @@ let activities = try await DashboardActivity.list(client: client, limit: 20)
 · `CategoryTreeNode` `/categories-tree` ro (own shape, see above) · `ShoperAttribute`
 `/attributes` ro · `AttributeGroup` `/attribute-groups` ro · `ShoperOption` `/options` ro ·
 `OptionGroup` `/option-groups` ro · `OptionValue` `/option-values` ro · `Collection`
-`/collections` ro · `Producer` `/producers` ro
+`/collections` ro (products via `CollectionProduct`, see below) · `Producer` `/producers` ro
 
 **Orders:** `ShopOrder` `/orders` ✅ (named `ShopOrder`, not `Order` — that name is taken by the
 SDK's internal sort-direction type) · `OrderProduct` `/order-products` ✅ · `OrderTag`
@@ -165,10 +165,10 @@ SDK's internal sort-direction type) · `OrderProduct` `/order-products` ✅ · `
 (no update/delete endpoint exists; creating requires the shop's loyalty program to be enabled —
 HTTP 400 otherwise)
 
-**Shipping/payment/geo:** `Shipping` `/shippings` ro · `Payment` `/payments` ro · `Zone` `/zones`
-ro · `Delivery` `/deliveries` ro · `Availability` `/availabilities` ro · `GeolocationCountry`
-`/geolocation-countries` ro · `GeolocationRegion` `/geolocation-regions` ro ·
-`GeolocationSubregion` `/geolocation-subregions` ro
+**Shipping/payment/geo:** `Shipping` `/shippings` ro · `Payment` `/payments` ro (channels via
+`PaymentChannel`, see below) · `Zone` `/zones` ro · `Delivery` `/deliveries` ro · `Availability`
+`/availabilities` ro · `GeolocationCountry` `/geolocation-countries` ro · `GeolocationRegion`
+`/geolocation-regions` ro · `GeolocationSubregion` `/geolocation-subregions` ro
 
 **Shop config/dictionaries:** `Tax` `/taxes` ro · `Currency` `/currencies` ro · `Unit` `/units` ro
 · `Gauge` `/gauges` ro · `Status` `/statuses` ro · `Language` `/languages` update-only (creating a
@@ -196,9 +196,24 @@ let webhookId = try await Webhook.create(client: client,
     payload: CreateWebhook(url: "https://example.com/hook", format: .json, events: [.orderCreate]))
 ```
 
+**Nested resources** (`CollectionProduct`, `PaymentChannel`) — parent-scoped endpoints
+(`/collections/{collection_id}/products`, `/payments/{payment_id}/channels`) that don't fit the
+standard `Resource` pattern (no single `id`); their static functions take an extra
+`collectionId:`/`paymentId:` parameter:
+```swift
+let products = try await CollectionProduct.list(client: client, collectionId: 3)
+try await CollectionProduct.update(client: client, collectionId: 3, productId: 36,
+    payload: UpdateCollectionProduct(position: 1))
+
+let channels = try await PaymentChannel.list(client: client, paymentId: 1)   // full CRUD
+```
+`CollectionProduct` is list/update only (no create/delete endpoint). `PaymentChannel` is gated to
+"selected applications" per the spec — expect HTTP 403 without that grant.
+
 **Not implemented:** CMS/blog, auctions, metafield *definitions* (`/metafields/{object}` — its
-dynamic path segment doesn't fit this SDK's resource pattern; use `MetafieldValue` directly if you
-already know the `metafieldId`), multi-warehouse support (`warehouses`, `Stock.warehouses`).
+dynamic **string** path segment, unlike a numeric parent id, doesn't fit this SDK's pattern; use
+`MetafieldValue` directly if you already know the `metafieldId`), multi-warehouse support
+(`warehouses`, `Stock.warehouses`).
 
 ## When something doesn't match the docs
 

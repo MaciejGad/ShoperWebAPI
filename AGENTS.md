@@ -90,21 +90,41 @@ Pattern: a plain `Encodable` struct (the request body) with a static `create(cli
 calls `client.post(endpoint:payload:)` directly and decodes the raw `Int` id, mirroring
 `Resource.create`'s behavior without the rest of the protocol. See `MetafieldBind.swift`.
 
-### Resources that don't fit the pattern: dynamic path segments
+### Nested/parent-scoped resources: the `:placeholder` pattern
 
-`Endpoint` is a `String`-backed enum; `Endpoint.url(...)` builds `<rawValue>/<id>` where `id` is
-an optional `Int`. Some Shoper endpoints put a dynamic **string** segment in the path before any
-numeric id — e.g. `GET /metafields/{object}` where `{object}` is `"product"`, `"category"`, etc.
-This doesn't fit `Endpoint`/`Resource`/`ClientProtocol` as they exist today, and extending
-`ClientProtocol` to support it would change a signature every conformer (`Client`, plus any
-hand-written fakes in tests like `FakeDeleteClient`) depends on.
+Some Shoper endpoints nest a resource under a numeric parent id — e.g. `GET
+/collections/{collection_id}/products`, `/payments/{payment_id}/channels`. `Endpoint` is a
+`String`-backed enum whose `url(...)` builds `<rawValue>/<id>`, so there's no built-in slot for a
+second dynamic id earlier in the path. Rather than restructuring `Endpoint` away from a raw-value
+enum, the fix is a literal placeholder token embedded in the `case`'s raw string:
 
-Current decision: **skip modeling these** rather than hack around it. `Metafield` (the
-`/metafields/{object}` definitions endpoint) is not implemented; only `MetafieldValue`
-(`/metafield-values`, a normal `{id}`-based resource) is. If a real need for the object-scoped
-endpoint comes up, the clean fix is adding a new `ClientProtocol` method with a default
-implementation in a protocol extension (so existing conformers don't break), not modifying the
-existing `get`/`post`/`put`/`delete` signatures.
+```swift
+case paymentChannels = "webapi/rest/payments/:payment_id/channels"
+```
+
+`Endpoint.url(config:parentId:id:...)` takes an optional `parentId: Int` and substitutes it for
+the first `:token` segment it finds in `rawValue` before appending anything else — see
+`Endpoint.swift`. `ClientProtocol`/`Client` got matching `get/post/put/delete(endpoint:parentId:...)`
+overloads alongside the original `id`-only ones (both are real protocol requirements; any
+hand-written `ClientProtocol` fake in tests — see `FakeDeleteClient` in
+`ResourceDeleteTests.swift` — needs `fatalError` stubs for the four new signatures even if it
+doesn't exercise them).
+
+These nested resources **don't conform to `Resource`** (it has no concept of a parent id) and
+don't use `ResourceList` (it requires `Model: Resource`) — they get their own static
+`list(client:parentId:...)`/`get`/`create`/`update`/`delete` functions and decode into
+`NestedResourceList<Model>` (`Sources/ShoperWebAPI/NestedResourceList.swift`, same
+count/pages/page/list shape as `ResourceList` without the `Resource` constraint). See
+`CollectionProduct.swift` (list + update only — no create/delete endpoint documented; **verified
+live**, 2026-07-04) and `PaymentChannel.swift` (full CRUD; 403-gated, see mismatches table below)
+for the two examples so far.
+
+A **string** dynamic segment with no numeric parent id at all — e.g. `GET /metafields/{object}`
+where `{object}` is `"product"`, `"category"`, etc. — is a different, still-unsolved case:
+`Metafield` (the `/metafields/{object}` definitions endpoint) remains unimplemented; only
+`MetafieldValue` (`/metafield-values`, a normal `{id}`-based resource) is. The same
+`:placeholder`-substitution mechanism could probably be extended to a string parentId if this
+becomes worth doing.
 
 ### Decoding conventions
 
@@ -348,6 +368,7 @@ code to match the OpenAPI doc — the doc is wrong, the code already matches rea
 | `Webhook` create example in the "Shoper Webhooks" doc | Shows `"event": "..."` (singular string) and a `"translations": {"pl_PL": {"name": "..."}}` field | **Not what the live API accepts.** Live-verified: `POST /webhooks` wants `"events": [...]` (plural array, matching the main spec's `Webhook`/`WebhookInsert` schema) and has no `translations` field at all — the response for a created webhook never includes one. Treat that doc's JSON example as illustrative/aspirational, not authoritative; `CreateWebhook`/`Webhook` in this SDK match the live-verified shape (main spec), not the doc example. |
 | `POST /loyalty-events` | Spec documents it as a normal create endpoint, `required: [user_id, score]` | Returns HTTP 400 `"Program lojalnościowy jest wyłączony"` (loyalty program disabled) whenever the shop's loyalty feature is off — confirmed live, consistent with `ApplicationConfig.loyaltyEnable == false`. Not a bug; `LoyaltyEvent.list`/`get` work fine regardless. |
 | `DashboardActivity.object` | Documents only `"order"` and `"client"` as possible values | Live data included `"user"` too (e.g. "Anna Kowalska zarejestrowała się w sklepie"). Modeled as a plain `String`, not an enum, precisely because the documented value set is already known to be incomplete. |
+| `payments/{payment_id}/channels` | Normal-looking nested CRUD endpoint | Spec calls it out as "available for selected applications" (contact appstore@shoper.pl) — same permission-gating as `order-refunds`/`order-transactions`. **Confirmed live** (2026-07-04, sklep173975.shoparena.pl): both `list` and `create` return HTTP 403 on a standard token, exactly as documented. |
 
 When you find a new mismatch like this, add a row here — this table is the single most valuable
 artifact for anyone continuing this work, since re-discovering these by trial and error is slow
@@ -367,12 +388,9 @@ or deferred:
   of scope for product management but straightforward to add following the pattern above if
   needed.
 - **`Metafield`** (`/metafields/{object}`, the metafield *definitions* endpoint) — not
-  implemented; its dynamic string path segment doesn't fit the current `Endpoint`/`Resource`
-  pattern. See "Resources that don't fit the pattern: dynamic path segments" above.
+  implemented; its dynamic **string** path segment doesn't fit the current `Endpoint`/`Resource`
+  pattern (see "Nested/parent-scoped resources: the `:placeholder` pattern" above).
   `MetafieldValue` (`/metafield-values`) *is* implemented — it's a normal `{id}`-based resource.
-- **Nested sub-resources with their own CRUD** — `collections/{id}/products`,
-  `payments/{payment_id}/channels` — deliberately not modeled as simple resources; they need
-  bespoke handling beyond the standard `Resource` pattern.
 - **`ApplicationLock` engage/release** — see Testing workflow above; a genuine safety decision,
   not a scope-cutting one.
 - Several models intentionally **omit deeply nested substructures** to avoid modeling complexity

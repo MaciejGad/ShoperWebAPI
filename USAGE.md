@@ -300,7 +300,7 @@ unless noted. "Write" = has a real `CreatePayload`/`UpdatePayload`, not `EmptyPa
 | `ShoperOption` | `/options` | read-only |
 | `OptionGroup` | `/option-groups` | read-only |
 | `OptionValue` | `/option-values` | read-only |
-| `Collection` | `/collections` | read-only |
+| `Collection` | `/collections` | read-only; product membership/position managed via `CollectionProduct`, see "Nested resources" below |
 | `Producer` | `/producers` | read-only |
 
 `CategoryTreeNode` doesn't follow the standard `Resource` pattern because
@@ -347,7 +347,7 @@ let parentMap2 = try await ShoperCategory.fetchParentMap(client: client)
 | Type | Endpoint | Write? |
 |---|---|---|
 | `Shipping` | `/shippings` | read-only |
-| `Payment` | `/payments` | read-only |
+| `Payment` | `/payments` | read-only; channels managed via `PaymentChannel`, see "Nested resources" below |
 | `Zone` | `/zones` | read-only |
 | `Delivery` | `/deliveries` | read-only |
 | `Availability` | `/availabilities` | read-only |
@@ -472,6 +472,32 @@ for activity in activities {
 `DashboardActivity.list` isn't `listAll` — the endpoint returns a flat array with no
 `count`/`pages` metadata, so there's no reliable way to auto-walk every page. Pass `page:`
 yourself for more than the first batch.
+
+### Nested resources (`CollectionProduct`, `PaymentChannel`)
+
+A couple of endpoints are nested under a parent id (`/collections/{collection_id}/products`,
+`/payments/{payment_id}/channels`) and don't fit the standard `Resource` pattern, so their static
+functions take an extra `collectionId:`/`paymentId:` parameter instead of just `id:`:
+
+```swift
+let products = try await CollectionProduct.list(client: client, collectionId: 3)
+try await CollectionProduct.update(client: client, collectionId: 3, productId: 36,
+    payload: UpdateCollectionProduct(position: 1))
+```
+
+`CollectionProduct` only supports `list`/`update` — there's no create/delete endpoint for
+collection membership. `position` only matters when the collection's sort type is manual.
+
+```swift
+let channels = try await PaymentChannel.list(client: client, paymentId: 1)
+let channelId = try await PaymentChannel.create(client: client, paymentId: 1,
+    payload: CreatePaymentChannel(channelKey: "my-channel"))
+try await PaymentChannel.delete(client: client, paymentId: 1, id: channelId)
+```
+
+`PaymentChannel` supports the full `list`/`get`/`create`/`update`/`delete` set, but — per the
+OpenAPI spec — is "available for selected applications"; expect HTTP 403 on a standard token
+unless Shoper has granted your app this scope.
 
 ## What's not in this SDK
 

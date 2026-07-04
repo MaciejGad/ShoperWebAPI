@@ -9,6 +9,13 @@ public protocol ClientProtocol {
     func put(endpoint: Endpoint, id: Int, payload: any Encodable) async throws -> Data
     func delete(endpoint: Endpoint, id: Int) async throws -> Data
     func decode<Model: Decodable>(data: Data) throws -> Model
+
+    // Nested/parent-scoped resources (e.g. `/payments/{payment_id}/channels`) — `endpoint`'s
+    // rawValue embeds a `:placeholder` token substituted with `parentId`. See `Endpoint.url`.
+    func get(endpoint: Endpoint, parentId: Int, id: Int?, filters: Filters?, sort: SortOrder?, page: Int?, limit: Int?) async throws -> Data
+    func post(endpoint: Endpoint, parentId: Int, payload: any Encodable) async throws -> Data
+    func put(endpoint: Endpoint, parentId: Int, id: Int, payload: any Encodable) async throws -> Data
+    func delete(endpoint: Endpoint, parentId: Int, id: Int) async throws -> Data
 }
 
 @available(macOS 12.0, *)
@@ -88,12 +95,28 @@ extension Client: ClientProtocol {
     public func delete(endpoint: Endpoint, id: Int) async throws -> Data {
         try await request(endpoint, id: id, method: .delete)
     }
-    
+
+    public func get(endpoint: Endpoint, parentId: Int, id: Int?, filters: Filters?, sort: SortOrder?, page: Int?, limit: Int?) async throws -> Data {
+        try await request(endpoint, parentId: parentId, id: id, method: .get, filters: filters, sort: sort, page: page, limit: limit)
+    }
+
+    public func post(endpoint: Endpoint, parentId: Int, payload: any Encodable) async throws -> Data {
+        try await request(endpoint, parentId: parentId, id: nil, method: .post, payload: payload)
+    }
+
+    public func put(endpoint: Endpoint, parentId: Int, id: Int, payload: any Encodable) async throws -> Data {
+        try await request(endpoint, parentId: parentId, id: id, method: .put, payload: payload)
+    }
+
+    public func delete(endpoint: Endpoint, parentId: Int, id: Int) async throws -> Data {
+        try await request(endpoint, parentId: parentId, id: id, method: .delete)
+    }
+
     public func decode<Model: Decodable>(data: Data) throws -> Model {
         try decoder.decode(Model.self, from: data)
     }
-    
-    private func request(_ endpoint: Endpoint, id: Int?, method: Method, payload: (any Encodable)? = nil, filters: Filters? = nil, sort: SortOrder? = nil, page: Int? = nil, limit: Int? = nil) async throws -> Data {
+
+    private func request(_ endpoint: Endpoint, parentId: Int? = nil, id: Int?, method: Method, payload: (any Encodable)? = nil, filters: Filters? = nil, sort: SortOrder? = nil, page: Int? = nil, limit: Int? = nil) async throws -> Data {
         let filtersString: String?
         if let filters, !filters.isEmpty {
             let filtersData = try filterEncoder.encode(filters)
@@ -101,7 +124,7 @@ extension Client: ClientProtocol {
         } else {
             filtersString = nil
         }
-        let url = try endpoint.url(config: config, id: id, filters: filtersString, sort: sort, page: page, limit: limit)
+        let url = try endpoint.url(config: config, parentId: parentId, id: id, filters: filtersString, sort: sort, page: page, limit: limit)
         if config.verbose {
             print("Url: \(url)")
         }

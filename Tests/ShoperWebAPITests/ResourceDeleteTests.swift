@@ -42,6 +42,22 @@ private struct FakeDeleteClient: ClientProtocol {
     func decode<Model: Decodable>(data: Data) throws -> Model {
         try JSONDecoder().decode(Model.self, from: data)
     }
+
+    func get(endpoint: Endpoint, parentId: Int, id: Int?, filters: Filters?, sort: ShoperWebAPI.SortOrder?, page: Int?, limit: Int?) async throws -> Data {
+        fatalError("not used in this test")
+    }
+
+    func post(endpoint: Endpoint, parentId: Int, payload: any Encodable) async throws -> Data {
+        fatalError("not used in this test")
+    }
+
+    func put(endpoint: Endpoint, parentId: Int, id: Int, payload: any Encodable) async throws -> Data {
+        fatalError("not used in this test")
+    }
+
+    func delete(endpoint: Endpoint, parentId: Int, id: Int) async throws -> Data {
+        fatalError("not used in this test")
+    }
 }
 
 @Test func testResourceDeleteReturnsTrueOnSuccessBody() async throws {

@@ -61,9 +61,26 @@ public enum Endpoint: String {
     case loyaltyEvents = "webapi/rest/loyalty-events"
     case dashboardActivities = "webapi/rest/dashboard-activities"
     case dashboardStats = "webapi/rest/dashboard-stats"
-    
-    func url(config: Config, id: Int?  = nil, filters: String? = nil, sort: SortOrder? = nil, page: Int? = nil, limit: Int? = nil) throws -> URL {
-        var url = config.shopURL.appendingPathComponent(rawValue)
+    /// Nested under a collection: rawValue embeds a `:collection_id` placeholder that
+    /// `url(config:parentId:...)` substitutes with the actual collection id before use.
+    case collectionProducts = "webapi/rest/collections/:collection_id/products"
+    /// Nested under a payment: rawValue embeds a `:payment_id` placeholder that
+    /// `url(config:parentId:...)` substitutes with the actual payment id before use.
+    case paymentChannels = "webapi/rest/payments/:payment_id/channels"
+
+    /// - Parameter parentId: substituted for the `:placeholder` token embedded in `rawValue` for
+    ///   nested endpoints (e.g. `collectionProducts`, `paymentChannels`). Required if `rawValue`
+    ///   contains a placeholder, ignored otherwise.
+    func url(config: Config, parentId: Int? = nil, id: Int?  = nil, filters: String? = nil, sort: SortOrder? = nil, page: Int? = nil, limit: Int? = nil) throws -> URL {
+        var path = rawValue
+        if let colonIndex = path.firstIndex(of: ":") {
+            guard let parentId else {
+                throw ShoperError.invalidURL
+            }
+            let placeholderEnd = path[colonIndex...].firstIndex(of: "/") ?? path.endIndex
+            path.replaceSubrange(colonIndex..<placeholderEnd, with: String(parentId))
+        }
+        var url = config.shopURL.appendingPathComponent(path)
         if let id {
             url.appendPathComponent(String(id))
         }
