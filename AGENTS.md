@@ -52,10 +52,25 @@ extension MyResource: Resource {
 ### Singleton resources (no list, no id)
 
 A handful of endpoints are singletons — `GET /application-config`, `GET /application-version`,
-`GET /application-lock` — with no list wrapper and no `{id}` in the URL. These don't fit
-`Resource`. Pattern: a plain `Decodable` struct with a static `get(client:)` that calls
-`client.get(endpoint:id: nil, ...)` directly. See `ApplicationVersion.swift`,
-`ApplicationConfig.swift`, `ApplicationLock.swift`.
+`GET /application-lock`, `GET /dashboard-stats` — with no list wrapper and no `{id}` in the URL.
+These don't fit `Resource`. Pattern: a plain `Decodable` struct with a static `get(client:)` that
+calls `client.get(endpoint:id: nil, ...)` directly. See `ApplicationVersion.swift`,
+`ApplicationConfig.swift`, `ApplicationLock.swift`, `DashboardStat.swift`.
+
+Nested numeric-prefixed keys (e.g. `DashboardStat`'s `"7days"`/`"30days"`) aren't valid Swift
+identifiers and `convertFromSnakeCase` doesn't touch them — give the enum case a normal Swift name
+and an explicit raw string override: `enum CodingKeys: String, CodingKey { case last7Days =
+"7days" }`.
+
+### Flat-array list endpoints without pagination metadata
+
+`/categories-tree` and `/dashboard-activities` both return a plain JSON array (no
+`count`/`pages`/`page` wrapper), unlike almost every other list endpoint. Because there's no
+metadata to know when you've read everything, name the accessor `list`/`listAll` accordingly:
+`CategoryTreeNode.listAll(client:)` fetches once and returns everything (the tree is naturally
+bounded), but `DashboardActivity.list(client:limit:page:)` is named `list` (not `listAll`) since
+activities are a genuinely paginated feed with no way to auto-detect the last page — the caller
+must pass `page` themselves if they want more than the first batch.
 
 ### Read-only / dictionary resources
 
@@ -332,6 +347,7 @@ code to match the OpenAPI doc — the doc is wrong, the code already matches rea
 | `Webhook.events` | Main API spec (`api-1.yaml`): just an array of strings, no allowed values documented | Validated server-side against a fixed whitelist of 24 events across 7 groups, documented in a **separate** dedicated OpenAPI file ("Shoper Webhooks", not the main spec — it's a pure `info.description` doc with no `paths`/`components`, not a functional schema). See `WebhookEvent.swift` for the full enumerated list. `"order.created"` was rejected live (HTTP 400); `"order.create"` — the documented, correct name — was accepted. |
 | `Webhook` create example in the "Shoper Webhooks" doc | Shows `"event": "..."` (singular string) and a `"translations": {"pl_PL": {"name": "..."}}` field | **Not what the live API accepts.** Live-verified: `POST /webhooks` wants `"events": [...]` (plural array, matching the main spec's `Webhook`/`WebhookInsert` schema) and has no `translations` field at all — the response for a created webhook never includes one. Treat that doc's JSON example as illustrative/aspirational, not authoritative; `CreateWebhook`/`Webhook` in this SDK match the live-verified shape (main spec), not the doc example. |
 | `POST /loyalty-events` | Spec documents it as a normal create endpoint, `required: [user_id, score]` | Returns HTTP 400 `"Program lojalnościowy jest wyłączony"` (loyalty program disabled) whenever the shop's loyalty feature is off — confirmed live, consistent with `ApplicationConfig.loyaltyEnable == false`. Not a bug; `LoyaltyEvent.list`/`get` work fine regardless. |
+| `DashboardActivity.object` | Documents only `"order"` and `"client"` as possible values | Live data included `"user"` too (e.g. "Anna Kowalska zarejestrowała się w sklepie"). Modeled as a plain `String`, not an enum, precisely because the documented value set is already known to be incomplete. |
 
 When you find a new mismatch like this, add a row here — this table is the single most valuable
 artifact for anyone continuing this work, since re-discovering these by trial and error is slow
@@ -347,9 +363,9 @@ or deferred:
 - **Multi-warehouse support** (`warehouses`, `warehouse-logs`, `warehouse-relocations`,
   `Stock.warehouses` mapping) — excluded per explicit instruction; the target shops don't use
   multi-warehouse.
-- **CMS/content** (`news*`, `aboutpages`), **auctions** (`auction-*`), **admin dashboard**
-  (`dashboard-*`) — not yet implemented; out of scope for product management but straightforward
-  to add following the pattern above if needed.
+- **CMS/content** (`news*`, `aboutpages`), **auctions** (`auction-*`) — not yet implemented; out
+  of scope for product management but straightforward to add following the pattern above if
+  needed.
 - **`Metafield`** (`/metafields/{object}`, the metafield *definitions* endpoint) — not
   implemented; its dynamic string path segment doesn't fit the current `Endpoint`/`Resource`
   pattern. See "Resources that don't fit the pattern: dynamic path segments" above.

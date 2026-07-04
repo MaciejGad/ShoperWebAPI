@@ -457,11 +457,27 @@ Only `create`/`get`/`list` exist — there's no update or delete endpoint for lo
 Creating one fails with HTTP 400 ("Program lojalnościowy jest wyłączony") if the shop's loyalty
 program isn't enabled; check `ApplicationConfig.loyaltyEnable` first if you're not sure.
 
+### Admin dashboard
+
+```swift
+let stats = try await DashboardStat.get(client: client)
+print(stats.general?.orders, stats.today?.income, stats.last7Days?.orders, stats.last30Days?.income)
+
+let activities = try await DashboardActivity.list(client: client, limit: 20)
+for activity in activities {
+    print(activity.info ?? "", activity.object ?? "")   // object: "order", "client", or "user" (undocumented but real)
+}
+```
+
+`DashboardActivity.list` isn't `listAll` — the endpoint returns a flat array with no
+`count`/`pages` metadata, so there's no reliable way to auto-walk every page. Pass `page:`
+yourself for more than the first batch.
+
 ## What's not in this SDK
 
 CMS/blog (`news*`, `aboutpages`), auctions (`auction-*`), metafield *definitions*
-(`/metafields/{object}` — but `MetafieldValue`/`MetafieldBind` above **are** implemented), admin
-dashboard stats, and multi-warehouse support (`warehouses`,
+(`/metafields/{object}` — but `MetafieldValue`/`MetafieldBind` above **are** implemented), and
+multi-warehouse support (`warehouses`,
 `Stock.warehouses`) are not implemented. If you need one of these, it's usually straightforward
 to add — see `AGENTS.md` for the pattern, or open an issue.
 

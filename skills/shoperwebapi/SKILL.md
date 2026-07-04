@@ -133,6 +133,13 @@ let parentMap = try await ShoperCategory.fetchParentMap(client: client)   // chi
 ```swift
 let version = try await ApplicationVersion.get(client: client)
 let shopConfig = try await ApplicationConfig.get(client: client)
+let stats = try await DashboardStat.get(client: client)   // .today/.last7Days/.last30Days/.general
+```
+
+**Dashboard activities** — flat array, no pagination metadata, so it's `list` not `listAll` (no
+way to auto-detect the last page):
+```swift
+let activities = try await DashboardActivity.list(client: client, limit: 20)
 ```
 
 ## Resource catalog (type — endpoint — writable?)
@@ -191,8 +198,7 @@ let webhookId = try await Webhook.create(client: client,
 
 **Not implemented:** CMS/blog, auctions, metafield *definitions* (`/metafields/{object}` — its
 dynamic path segment doesn't fit this SDK's resource pattern; use `MetafieldValue` directly if you
-already know the `metafieldId`), admin dashboard stats, multi-warehouse support
-(`warehouses`, `Stock.warehouses`).
+already know the `metafieldId`), multi-warehouse support (`warehouses`, `Stock.warehouses`).
 
 ## When something doesn't match the docs
 
