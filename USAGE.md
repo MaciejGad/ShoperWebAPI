@@ -342,6 +342,17 @@ let parentMap2 = try await ShoperCategory.fetchParentMap(client: client)
 | `PromotionCode` | `/promotion-codes` | ✅ |
 | `LoyaltyEvent` | `/loyalty-events` | create only — no update/delete endpoint exists in the API. Creating fails with HTTP 400 if the shop's loyalty program isn't enabled (`ApplicationConfig.loyaltyEnable`). |
 
+### CMS
+
+| Type | Endpoint | Write? |
+|---|---|---|
+| `Aboutpage` | `/aboutpages` | ✅ |
+| `News` | `/news` | ✅ |
+| `NewsCategory` | `/news-categories` | ✅ |
+| `NewsComment` | `/news-comments` | ✅ |
+| `NewsFile` | `/news-files` | ✅ |
+| `NewsTag` | `/news-tags` | ✅ |
+
 ### Shipping, payment & geography
 
 | Type | Endpoint | Write? |
@@ -499,13 +510,36 @@ try await PaymentChannel.delete(client: client, paymentId: 1, id: channelId)
 OpenAPI spec — is "available for selected applications"; expect HTTP 403 on a standard token
 unless Shoper has granted your app this scope.
 
+### CMS: blog posts and static pages
+
+```swift
+let pageId = try await Aboutpage.create(client: client, payload: CreateAboutpage(name: "Terms", langId: 1, content: "..."))
+
+let newsId = try await News.create(client: client, payload: CreateNews(
+    name: "New arrivals", content: "...", date: "2026-07-04 00:00:00", langId: 1
+))
+let items = try await News.list(client: client)
+print(items.list.first?.tags)   // [Int] tag ids — live API returns ids, not full NewsTag objects
+
+let commentId = try await NewsComment.create(client: client, payload: CreateNewsComment(
+    newsId: newsId, content: "Great post!", langId: 1, userName: "Jane"
+))
+
+let fileId = try await NewsFile.create(client: client, payload: CreateNewsFile.file(
+    content: pdfData, name: "brochure.pdf", newsId: newsId
+))
+```
+
+`langId`/`userName` (for `CreateNewsComment`) and `newsId` (for `CreateNewsFile`) are modeled as
+non-optional even though the OpenAPI spec doesn't list them as required — the live API rejects
+requests missing them (see `AGENTS.md`'s mismatches table for the exact error messages).
+
 ## What's not in this SDK
 
-CMS/blog (`news*`, `aboutpages`), auctions (`auction-*`), metafield *definitions*
-(`/metafields/{object}` — but `MetafieldValue`/`MetafieldBind` above **are** implemented), and
-multi-warehouse support (`warehouses`,
-`Stock.warehouses`) are not implemented. If you need one of these, it's usually straightforward
-to add — see `AGENTS.md` for the pattern, or open an issue.
+Auctions (`auction-*`), metafield *definitions* (`/metafields/{object}` — but
+`MetafieldValue`/`MetafieldBind` above **are** implemented), and multi-warehouse support
+(`warehouses`, `Stock.warehouses`) are not implemented. If you need one of these, it's usually
+straightforward to add — see `AGENTS.md` for the pattern, or open an issue.
 
 ## More examples
 

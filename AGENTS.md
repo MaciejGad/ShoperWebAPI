@@ -220,6 +220,12 @@ with named static members, `Codable` via the same lenient Int-or-String pattern 
   /loyalty-events` (create), `GET /loyalty-events/{id}` (get) — no `PUT`/`DELETE`. For these,
   `UpdatePayload = EmptyPayload` with a doc comment explaining calling `.update()` will fail
   against the real API (it still compiles, since the protocol requires the associated type).
+- **Don't trust the spec's `required` list at face value** — it's been wrong in both directions.
+  `NewsCommentInsert`/`NewsFileInsert` document few or no required fields, but the live API
+  rejects requests missing `langId`/`userName` (comments) or `newsId` (files) with a real
+  validation error (see the mismatches table below). Model the practically-required fields as
+  non-optional Swift properties once you've live-verified this, even if the spec disagrees —
+  don't just mirror the spec's `required:` array blindly.
 
 ### `Identifier`
 
@@ -369,6 +375,9 @@ code to match the OpenAPI doc — the doc is wrong, the code already matches rea
 | `POST /loyalty-events` | Spec documents it as a normal create endpoint, `required: [user_id, score]` | Returns HTTP 400 `"Program lojalnościowy jest wyłączony"` (loyalty program disabled) whenever the shop's loyalty feature is off — confirmed live, consistent with `ApplicationConfig.loyaltyEnable == false`. Not a bug; `LoyaltyEvent.list`/`get` work fine regardless. |
 | `DashboardActivity.object` | Documents only `"order"` and `"client"` as possible values | Live data included `"user"` too (e.g. "Anna Kowalska zarejestrowała się w sklepie"). Modeled as a plain `String`, not an enum, precisely because the documented value set is already known to be incomplete. |
 | `payments/{payment_id}/channels` | Normal-looking nested CRUD endpoint | Spec calls it out as "available for selected applications" (contact appstore@shoper.pl) — same permission-gating as `order-refunds`/`order-transactions`. **Confirmed live** (2026-07-04, sklep173975.shoparena.pl): both `list` and `create` return HTTP 403 on a standard token, exactly as documented. |
+| `News.tags` | Documents an array of full `NewsTag` objects (`items: $ref: NewsTag.yml`) | Live response is a flat array of tag **ids** (`"tags":[1,2,3]`) — confirmed live, 2026-07-04. Modeled as `[Int]`, not `[NewsTag]`; the wrong type silently decoded to `[]` via a `try?` before this was caught, so don't assume a `try?`-guarded array decode "working" means the shape is right — it can hide exactly this kind of mismatch. Look up `NewsTag.get` per id if you need the name. |
+| `NewsCommentInsert` | Spec documents **no required fields at all** | Live API disagrees (confirmed 2026-07-04): omitting `langId` defaults it to `0` and rejects with "Nie znaleziono wartości '0'" (language id 0 doesn't exist); omitting `userName` fails with "Pole wymagane" (field required). `CreateNewsComment.langId`/`.userName` are modeled as non-optional to match reality, not the spec. |
+| `NewsFileInsert` | Spec's `required` list is just `[name]` | Live API disagrees (confirmed 2026-07-04): omitting `newsId` defaults it to `0` and rejects with "News does not exist". `CreateNewsFile.newsId` is modeled as non-optional to match reality. |
 
 When you find a new mismatch like this, add a row here — this table is the single most valuable
 artifact for anyone continuing this work, since re-discovering these by trial and error is slow
@@ -384,9 +393,8 @@ or deferred:
 - **Multi-warehouse support** (`warehouses`, `warehouse-logs`, `warehouse-relocations`,
   `Stock.warehouses` mapping) — excluded per explicit instruction; the target shops don't use
   multi-warehouse.
-- **CMS/content** (`news*`, `aboutpages`), **auctions** (`auction-*`) — not yet implemented; out
-  of scope for product management but straightforward to add following the pattern above if
-  needed.
+- **Auctions** (`auction-*`) — not yet implemented; out of scope for product management but
+  straightforward to add following the pattern above if needed.
 - **`Metafield`** (`/metafields/{object}`, the metafield *definitions* endpoint) — not
   implemented; its dynamic **string** path segment doesn't fit the current `Endpoint`/`Resource`
   pattern (see "Nested/parent-scoped resources: the `:placeholder` pattern" above).

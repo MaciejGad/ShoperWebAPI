@@ -1,6 +1,6 @@
 ---
 name: shoperwebapi
-description: Reference for the ShoperWebAPI Swift SDK — a typed client for the Shoper e-commerce REST API covering products, orders, customers, marketing, shipping/payment, and shop-config resources. Use when writing or reviewing Swift code that adds this package to an app, authenticates against a Shoper store, or calls any of its ~50 resources (Product, ShopOrder, User, PromotionCode, Redirect, etc.).
+description: Reference for the ShoperWebAPI Swift SDK — a typed client for the Shoper e-commerce REST API covering products, orders, customers, marketing, shipping/payment, shop-config, and CMS resources. Use when writing or reviewing Swift code that adds this package to an app, authenticates against a Shoper store, or calls any of its ~60 resources (Product, ShopOrder, User, PromotionCode, Redirect, News, etc.).
 ---
 
 # ShoperWebAPI usage reference
@@ -210,8 +210,15 @@ let channels = try await PaymentChannel.list(client: client, paymentId: 1)   // 
 `CollectionProduct` is list/update only (no create/delete endpoint). `PaymentChannel` is gated to
 "selected applications" per the spec — expect HTTP 403 without that grant.
 
-**Not implemented:** CMS/blog, auctions, metafield *definitions* (`/metafields/{object}` — its
-dynamic **string** path segment, unlike a numeric parent id, doesn't fit this SDK's pattern; use
+**CMS:** `Aboutpage` `/aboutpages` ✅ · `News` `/news` ✅ · `NewsCategory` `/news-categories` ✅ ·
+`NewsComment` `/news-comments` ✅ · `NewsFile` `/news-files` ✅ · `NewsTag` `/news-tags` ✅. All
+plain `{id}`-based CRUD, no nesting despite the blog-post relationship. `News.tags` is `[Int]`
+(tag ids), **not** `[NewsTag]` — the spec documents full objects but the live API returns ids.
+`CreateNewsComment` requires `langId`/`userName` and `CreateNewsFile` requires `newsId` even
+though the OpenAPI spec doesn't mark them required — omitting them is rejected live.
+
+**Not implemented:** auctions, metafield *definitions* (`/metafields/{object}` — its dynamic
+**string** path segment, unlike a numeric parent id, doesn't fit this SDK's pattern; use
 `MetafieldValue` directly if you already know the `metafieldId`), multi-warehouse support
 (`warehouses`, `Stock.warehouses`).
 

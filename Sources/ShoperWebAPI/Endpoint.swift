@@ -61,6 +61,12 @@ public enum Endpoint: String {
     case loyaltyEvents = "webapi/rest/loyalty-events"
     case dashboardActivities = "webapi/rest/dashboard-activities"
     case dashboardStats = "webapi/rest/dashboard-stats"
+    case aboutpages = "webapi/rest/aboutpages"
+    case news = "webapi/rest/news"
+    case newsCategories = "webapi/rest/news-categories"
+    case newsComments = "webapi/rest/news-comments"
+    case newsFiles = "webapi/rest/news-files"
+    case newsTags = "webapi/rest/news-tags"
     /// Nested under a collection: rawValue embeds a `:collection_id` placeholder that
     /// `url(config:parentId:...)` substitutes with the actual collection id before use.
     case collectionProducts = "webapi/rest/collections/:collection_id/products"
