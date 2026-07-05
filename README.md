@@ -510,6 +510,10 @@ By default, Swift Testing runs tests in parallel for faster execution, but seria
 
 ## Documentation
 
+- **[`tutorial.md`](tutorial.md)** / **[`tutorial_pl.md`](tutorial_pl.md)** — a step-by-step
+  tutorial (English / Polish) for someone starting out with this SDK: installation, connecting,
+  first requests, the resource pattern, filtering, creating/updating data, and a mini-project at
+  the end.
 - **[`USAGE.md`](USAGE.md)** — the complete usage reference: full resource catalog, recipes for
   common tasks (create/clone a product, upload images, work with orders), and notes on quirks
   you may run into.
