@@ -1,6 +1,6 @@
 ---
 name: shoperwebapi
-description: Reference for the ShoperWebAPI Swift SDK — a typed client for the Shoper e-commerce REST API covering products, orders, customers, marketing, shipping/payment, shop-config, and CMS resources. Use when writing or reviewing Swift code that adds this package to an app, authenticates against a Shoper store, or calls any of its ~60 resources (Product, ShopOrder, User, PromotionCode, Redirect, News, etc.).
+description: Reference for the ShoperWebAPI Swift SDK — a typed client for the Shoper e-commerce REST API covering products, orders, customers, marketing, shipping/payment, shop-config, CMS, and auction resources. Use when writing or reviewing Swift code that adds this package to an app, authenticates against a Shoper store, or calls any of its ~65 resources (Product, ShopOrder, User, PromotionCode, Redirect, News, Auction, etc.).
 ---
 
 # ShoperWebAPI usage reference
@@ -217,10 +217,14 @@ plain `{id}`-based CRUD, no nesting despite the blog-post relationship. `News.ta
 `CreateNewsComment` requires `langId`/`userName` and `CreateNewsFile` requires `newsId` even
 though the OpenAPI spec doesn't mark them required — omitting them is rejected live.
 
-**Not implemented:** auctions, metafield *definitions* (`/metafields/{object}` — its dynamic
-**string** path segment, unlike a numeric parent id, doesn't fit this SDK's pattern; use
-`MetafieldValue` directly if you already know the `metafieldId`), multi-warehouse support
-(`warehouses`, `Stock.warehouses`).
+**Auctions:** `Auction` `/auctions` ✅ · `AuctionHouse` `/auction-houses` ✅ · `AuctionOrder`
+`/auction-orders` create/update only — the API has no `DELETE /auction-orders/{id}`, so
+`.delete()` compiles (protocol requirement) but 404s live.
+
+**Not implemented:** metafield *definitions* (`/metafields/{object}` — its dynamic **string** path
+segment, unlike a numeric parent id, doesn't fit this SDK's pattern; use `MetafieldValue` directly
+if you already know the `metafieldId`), multi-warehouse support (`warehouses`,
+`Stock.warehouses`).
 
 ## When something doesn't match the docs
 

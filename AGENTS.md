@@ -378,6 +378,7 @@ code to match the OpenAPI doc — the doc is wrong, the code already matches rea
 | `News.tags` | Documents an array of full `NewsTag` objects (`items: $ref: NewsTag.yml`) | Live response is a flat array of tag **ids** (`"tags":[1,2,3]`) — confirmed live, 2026-07-04. Modeled as `[Int]`, not `[NewsTag]`; the wrong type silently decoded to `[]` via a `try?` before this was caught, so don't assume a `try?`-guarded array decode "working" means the shape is right — it can hide exactly this kind of mismatch. Look up `NewsTag.get` per id if you need the name. |
 | `NewsCommentInsert` | Spec documents **no required fields at all** | Live API disagrees (confirmed 2026-07-04): omitting `langId` defaults it to `0` and rejects with "Nie znaleziono wartości '0'" (language id 0 doesn't exist); omitting `userName` fails with "Pole wymagane" (field required). `CreateNewsComment.langId`/`.userName` are modeled as non-optional to match reality, not the spec. |
 | `NewsFileInsert` | Spec's `required` list is just `[name]` | Live API disagrees (confirmed 2026-07-04): omitting `newsId` defaults it to `0` and rejects with "News does not exist". `CreateNewsFile.newsId` is modeled as non-optional to match reality. |
+| `auction-orders` | Looks like a normal `{id}`-based CRUD resource in the schema list (`AuctionOrder`/`AuctionOrderInsert`/`AuctionOrderUpdate` all exist) | The path list only documents `GET`/`POST`/`GET {id}`/`PUT {id}` — **no `DELETE /auction-orders/{id}`**. `AuctionOrder` still conforms to `Resource` (so `list`/`get`/`create`/`update` work normally, confirmed live 2026-07-05), but calling `.delete()` will 404 since the endpoint doesn't exist; see the doc comment on `AuctionOrder.swift`. |
 
 When you find a new mismatch like this, add a row here — this table is the single most valuable
 artifact for anyone continuing this work, since re-discovering these by trial and error is slow
@@ -393,8 +394,6 @@ or deferred:
 - **Multi-warehouse support** (`warehouses`, `warehouse-logs`, `warehouse-relocations`,
   `Stock.warehouses` mapping) — excluded per explicit instruction; the target shops don't use
   multi-warehouse.
-- **Auctions** (`auction-*`) — not yet implemented; out of scope for product management but
-  straightforward to add following the pattern above if needed.
 - **`Metafield`** (`/metafields/{object}`, the metafield *definitions* endpoint) — not
   implemented; its dynamic **string** path segment doesn't fit the current `Endpoint`/`Resource`
   pattern (see "Nested/parent-scoped resources: the `:placeholder` pattern" above).

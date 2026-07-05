@@ -353,6 +353,14 @@ let parentMap2 = try await ShoperCategory.fetchParentMap(client: client)
 | `NewsFile` | `/news-files` | ✅ |
 | `NewsTag` | `/news-tags` | ✅ |
 
+### Auctions
+
+| Type | Endpoint | Write? |
+|---|---|---|
+| `Auction` | `/auctions` | ✅ |
+| `AuctionHouse` | `/auction-houses` | ✅ |
+| `AuctionOrder` | `/auction-orders` | create/update only — no delete endpoint exists in the API (`.delete()` will 404) |
+
 ### Shipping, payment & geography
 
 | Type | Endpoint | Write? |
@@ -534,12 +542,31 @@ let fileId = try await NewsFile.create(client: client, payload: CreateNewsFile.f
 non-optional even though the OpenAPI spec doesn't list them as required — the live API rejects
 requests missing them (see `AGENTS.md`'s mismatches table for the exact error messages).
 
+### Auctions: linking listings and marketplace orders
+
+```swift
+let houseId = try await AuctionHouse.create(client: client, payload: CreateAuctionHouse(name: "Allegro"))
+
+let auctionId = try await Auction.create(client: client, payload: CreateAuction(
+    auctionHouseId: houseId, realAuctionId: "1234567890", title: "My listing",
+    salesFormat: 1,   // 0 = bidding, 1 = immediate/buy-now
+    productId: 36, quantity: 1
+))
+
+let auctionOrderId = try await AuctionOrder.create(client: client, payload: CreateAuctionOrder(
+    orderId: 42, buyerLogin: "allegro_buyer_123"
+))
+```
+
+`AuctionOrder` has no `DELETE` endpoint — the OpenAPI path list only documents `GET`/`POST`/`GET
+{id}`/`PUT {id}`. `Resource.delete` is still callable (the protocol requires it) but will 404.
+
 ## What's not in this SDK
 
-Auctions (`auction-*`), metafield *definitions* (`/metafields/{object}` — but
-`MetafieldValue`/`MetafieldBind` above **are** implemented), and multi-warehouse support
-(`warehouses`, `Stock.warehouses`) are not implemented. If you need one of these, it's usually
-straightforward to add — see `AGENTS.md` for the pattern, or open an issue.
+Metafield *definitions* (`/metafields/{object}` — but `MetafieldValue`/`MetafieldBind` above
+**are** implemented) and multi-warehouse support (`warehouses`, `Stock.warehouses`) are not
+implemented. If you need one of these, it's usually straightforward to add — see `AGENTS.md` for
+the pattern, or open an issue.
 
 ## More examples
 

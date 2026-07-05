@@ -67,6 +67,9 @@ public enum Endpoint: String {
     case newsComments = "webapi/rest/news-comments"
     case newsFiles = "webapi/rest/news-files"
     case newsTags = "webapi/rest/news-tags"
+    case auctions = "webapi/rest/auctions"
+    case auctionHouses = "webapi/rest/auction-houses"
+    case auctionOrders = "webapi/rest/auction-orders"
     /// Nested under a collection: rawValue embeds a `:collection_id` placeholder that
     /// `url(config:parentId:...)` substitutes with the actual collection id before use.
     case collectionProducts = "webapi/rest/collections/:collection_id/products"
