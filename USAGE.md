@@ -564,7 +564,9 @@ let auctionOrderId = try await AuctionOrder.create(client: client, payload: Crea
 ## What's not in this SDK
 
 Metafield *definitions* (`/metafields/{object}` — but `MetafieldValue`/`MetafieldBind` above
-**are** implemented) and multi-warehouse support (`warehouses`, `Stock.warehouses`) are not
+**are** implemented), multi-warehouse support (`warehouses`, `Stock.warehouses`), and
+`ObjectMtime` (`/object-mtime` — returned HTTP 501 "Not implemented" on the store this was
+verified against, a documented possible response for this endpoint, not a bug) are not
 implemented. If you need one of these, it's usually straightforward to add — see `AGENTS.md` for
 the pattern, or open an issue.
 

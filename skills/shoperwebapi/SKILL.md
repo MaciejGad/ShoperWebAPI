@@ -224,7 +224,8 @@ though the OpenAPI spec doesn't mark them required — omitting them is rejected
 **Not implemented:** metafield *definitions* (`/metafields/{object}` — its dynamic **string** path
 segment, unlike a numeric parent id, doesn't fit this SDK's pattern; use `MetafieldValue` directly
 if you already know the `metafieldId`), multi-warehouse support (`warehouses`,
-`Stock.warehouses`).
+`Stock.warehouses`), `ObjectMtime` (`/object-mtime` — returned HTTP 501 "Not implemented" on the
+store this was verified against, a documented possible response for this endpoint, not a bug).
 
 ## When something doesn't match the docs
 

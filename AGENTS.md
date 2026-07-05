@@ -400,6 +400,11 @@ or deferred:
   `MetafieldValue` (`/metafield-values`) *is* implemented — it's a normal `{id}`-based resource.
 - **`ApplicationLock` engage/release** — see Testing workflow above; a genuine safety decision,
   not a scope-cutting one.
+- **`ObjectMtime`** (`GET /object-mtime`) — not implemented. It's a trivial singleton by shape
+  (`{date: Int}`, no params), but returned HTTP 501 "Not implemented" live (confirmed 2026-07-05,
+  sklep173975.shoparena.pl) — one of the spec's own documented possible responses for this
+  endpoint ("disabled or not supported"). Not worth modeling until there's a store where it
+  actually works to verify against.
 - Several models intentionally **omit deeply nested substructures** to avoid modeling complexity
   with uncertain payoff: `Shipping` (no `payments[]`/`ranges[]`/`countries{}`/`gauges[]`),
   `Parcel` (no `billingAddress`/`deliveryAddress`/`products[]`), `PromotionCode` (no
