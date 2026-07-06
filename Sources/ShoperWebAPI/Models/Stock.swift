@@ -17,7 +17,7 @@ public struct Stock: Codable, Sendable {
     public let weightType: Int
     public let availabilityId: Int?
     public let calculatedAvailabilityId: Int
-    public let deliveryId: Int
+    public let deliveryId: Int?
     public let gfxId: Int?
     public let package: Decimal
     public let priceWholesale: Decimal
@@ -70,7 +70,7 @@ public struct Stock: Codable, Sendable {
         self.weightType = try container.decodeInt(forKey: .weightType)
         self.availabilityId = try container.decodeIntIfPresent(forKey: .availabilityId)
         self.calculatedAvailabilityId = try container.decodeInt(forKey: .calculatedAvailabilityId)
-        self.deliveryId = try container.decodeInt(forKey: .deliveryId)
+        self.deliveryId = try container.decodeIntIfPresent(forKey: .deliveryId)
         self.gfxId = try container.decodeIntIfPresent(forKey: .gfxId)
         self.package = try container.decodeDecimal(forKey: .package)
         self.priceWholesale = try container.decodeDecimal(forKey: .priceWholesale)
