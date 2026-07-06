@@ -88,7 +88,11 @@ public struct Product: Codable, Sendable {
         self.additionalWarehouse = try container.decodeIfPresent(String.self, forKey: .additionalWarehouse)
         self.related = try container.decode([Int].self, forKey: .related)
         self.options = try container.decode([Int].self, forKey: .options)
-        self.mainImage = try container.decodeIfPresent(ProductImage.self, forKey: .mainImage)
+        // The live API can return `main_image: false` for a product with no photo instead of
+        // null/omitting the field, which isn't a valid ProductImage payload — treat that (or any
+        // other shape that doesn't decode as ProductImage) the same as "no image" rather than
+        // failing to decode the whole product.
+        self.mainImage = try? container.decodeIfPresent(ProductImage.self, forKey: .mainImage)
         self.stock = try container.decode(Stock.self, forKey: .stock)
         self.translations = try container.decode([String : Translation].self, forKey: .translations)
         self.attributes = try container.decode(Attributes.self, forKey: .attributes)
