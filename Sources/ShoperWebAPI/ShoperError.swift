@@ -3,7 +3,7 @@ import Foundation
 import FoundationNetworking
 #endif
 
-enum ShoperError: Error {
+public enum ShoperError: Error {
     case invalidCredentials
     case invalidURL
     case invalidResponse(Data, URLResponse)
